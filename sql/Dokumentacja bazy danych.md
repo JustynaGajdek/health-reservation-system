@@ -89,7 +89,11 @@ Przechowuje dane o wizytach lekarskich.
 ## 4. Kluczowe relacje
 
 ✅ `users` ↔ `patients`, `doctors`, `receptionists` – użytkownicy mogą być pacjentami, lekarzami lub recepcjonistami.
+
 ✅ `patients` ↔ `appointments` – pacjent umawia wizytę.
+
 ✅ `doctors` ↔ `appointments` – wizyta przypisana do lekarza.
+
 ✅ `patients` ↔ `prescriptions` – pacjent może mieć wiele recept.
+
 ✅ `patients` ↔ `vaccinations` – historia szczepień pacjenta.
