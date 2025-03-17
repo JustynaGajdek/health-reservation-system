@@ -30,4 +30,12 @@ public class UserService implements UserDetailsService {
         return new User(user.getEmail(), user.getPasswordHash(), authorities);
 
     }
+
+    public List<UserEntity> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }

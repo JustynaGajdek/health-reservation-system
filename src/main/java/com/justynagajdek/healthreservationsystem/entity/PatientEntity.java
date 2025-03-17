@@ -19,27 +19,18 @@ public class PatientEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private UserEntity user;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+    @Column(name = "pesel", nullable = false, unique = true)
+    private String pesel;
 
-    @Column(name = "date_of_birth", nullable = false)
+    @Column(name = "birth_date", nullable = false)
     private LocalDate dateOfBirth;
-
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
-
-    @Column(name = "phone", unique = true)
-    private String phone;
 
     @Column(name = "address")
     private String address;
-
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "guardian_id")

@@ -50,3 +50,5 @@ Thumbs.db
 
 ### VS Code ###
 .vscode/
+
+application-local.properties
