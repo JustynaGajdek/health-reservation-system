@@ -1,6 +1,7 @@
 package com.justynagajdek.healthreservationsystem.config;
 
 import com.justynagajdek.healthreservationsystem.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,6 +49,14 @@ public class SecurityConfig {
                                 .requestMatchers("/receptionist/**").hasAnyRole("RECEPTIONIST", "ADMIN")
                                 .requestMatchers("/patient/**").hasAnyRole("PATIENT","RECEPTIONIST", "ADMIN")
                                 .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
