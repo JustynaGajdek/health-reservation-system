@@ -1,10 +1,8 @@
 package com.justynagajdek.healthreservationsystem.entity;
 
+import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -37,6 +35,10 @@ public class UserEntity {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountStatus status = AccountStatus.PENDING;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private PatientEntity patient;
@@ -133,6 +135,15 @@ public class UserEntity {
     public void setReceptionist(ReceptionistEntity receptionist) {
         this.receptionist = receptionist;
     }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
+
 
 }
 
