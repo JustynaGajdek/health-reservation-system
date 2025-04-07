@@ -1,0 +1,173 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: justyna
+      changes:
+        - createTable:
+            tableName: users
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: password_hash
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: varchar(20)
+              - column:
+                  name: role
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(50)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: doctors
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: specialization
+                  type: varchar(100)
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_doctor_user
+                    references: users(id)
+
+        - createTable:
+            tableName: receptionists
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_receptionist_user
+                    references: users(id)
+
+        - createTable:
+            tableName: patients
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_patient_user
+                    references: users(id)
+              - column:
+                  name: date_of_birth
+                  type: date
+
+        - createTable:
+            tableName: appointments
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: doctor_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_appointment_doctor
+                    references: doctors(id)
+              - column:
+                  name: patient_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_appointment_patient
+                    references: patients(id)
+              - column:
+                  name: appointment_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(100)
+              - column:
+                  name: status
+                  type: varchar(50)
+                  defaultValue: PENDING
+
+        - createTable:
+            tableName: prescriptions
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: appointment_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_prescription_appointment
+                    references: appointments(id)
+              - column:
+                  name: medication
+                  type: varchar(255)
+              - column:
+                  name: dosage
+                  type: varchar(100)
+              - column:
+                  name: issued_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
