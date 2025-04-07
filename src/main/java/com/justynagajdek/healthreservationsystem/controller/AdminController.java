@@ -1,6 +1,7 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
+import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,4 +36,17 @@ public class AdminController {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted");
     }
+
+    @GetMapping("/users/pending")
+    public List<UserEntity> getPendingUsers() {
+        return userService.getUsersByStatus(AccountStatus.PENDING);
+    }
+
+    @PutMapping("/users/approve/{id}")
+    public ResponseEntity<String> approveUser(@PathVariable Long id) {
+        userService.approveUser(id);
+        return ResponseEntity.ok("User approved successfully.");
+    }
+
+
 }

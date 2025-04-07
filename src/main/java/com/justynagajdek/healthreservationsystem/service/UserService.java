@@ -71,4 +71,16 @@ public class UserService implements UserDetailsService {
 
         return userRepository.save(user);
     }
+
+    public List<UserEntity> getUsersByStatus(AccountStatus status) {
+        return userRepository.findByStatus(status);
+    }
+
+    public void approveUser(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setStatus(AccountStatus.ACTIVE);
+        userRepository.save(user);
+    }
+
 }
