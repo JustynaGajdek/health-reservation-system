@@ -54,6 +54,7 @@ health-reservation-system/
 ├── docs/ # Technical documentation
 │ ├── ARCHITECTURE.md
 │ ├── api_endpoints.md
+│ ├── database-schema.md
 │ └── db_schema_diagram.png
 │
 └── README.md
@@ -103,7 +104,7 @@ H2 in-memory database is used for integration testing.
 ## 📚 Documentation
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [API Endpoints](docs/api_endpoints.md)
-- [Full Database Documentation (PL)]()
+- [Full Database Documentation (PL)](docs/database-schema.md)
 - [ER Diagram](docs/db_schema_diagram.png)
 
 ## 📌 Status
