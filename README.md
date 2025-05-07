@@ -105,7 +105,7 @@ H2 in-memory database is used for integration testing.
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [API Endpoints](docs/api_endpoints.md)
 - [Full Database Documentation (PL)](docs/database-schema.md)
-- [ER Diagram](docs/db_schema_diagram.png)
+- [ER Diagram](docs/db_schema_diagram.png.png)
 
 ## 📌 Status
 ✅ MVP in progress — login, registration, appointment booking and vaccine records complete.
