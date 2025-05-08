@@ -1,0 +1,42 @@
+package com.justynagajdek.healthreservationsystem.service;
+
+import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
+import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
+import com.justynagajdek.healthreservationsystem.entity.UserEntity;
+import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
+import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
+import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AppointmentService {
+
+    private final AppointmentRepository appointmentRepository;
+    private final UserRepository userRepository;
+
+    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository) {
+        this.appointmentRepository = appointmentRepository;
+        this.userRepository = userRepository;
+    }
+
+    public void createPendingAppointment(AppointmentRequestDto dto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getPatient() == null) {
+            throw new RuntimeException("Only patients can request appointments.");
+        }
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setPatient(user.getPatient());
+        appointment.setAppointmentDate(dto.getPreferredDateTime());
+        appointment.setAppointmentType(dto.getAppointmentType());
+        appointment.setStatus(AppointmentStatus.PENDING);
+
+
+        appointmentRepository.save(appointment);
+    }
+}
