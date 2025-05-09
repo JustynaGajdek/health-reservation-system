@@ -12,6 +12,8 @@ import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AppointmentService {
 
@@ -59,5 +61,10 @@ public class AppointmentService {
 
         appointmentRepository.save(appointment);
     }
+
+    public List<AppointmentEntity> getUnassignedAppointments() {
+        return appointmentRepository.findByDoctorIsNull();
+    }
+
 
 }
