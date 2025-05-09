@@ -86,6 +86,20 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
+    public List<AppointmentEntity> getAppointmentsForCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByEmail(email).orElseThrow();
+
+        if (user.getPatient() != null) {
+            return appointmentRepository.findByPatient_Id(user.getPatient().getId());
+        } else if (user.getDoctor() != null) {
+            return appointmentRepository.findByDoctor_Id(user.getDoctor().getId());
+        } else {
+            throw new RuntimeException("User is neither a doctor nor a patient.");
+        }
+    }
+
+
 
 
 }

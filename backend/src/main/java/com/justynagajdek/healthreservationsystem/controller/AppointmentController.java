@@ -1,10 +1,13 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
+import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/appointments")
@@ -21,4 +24,11 @@ public class AppointmentController {
         appointmentService.createPendingAppointment(dto);
         return ResponseEntity.ok("Appointment request submitted and pending assignment.");
     }
+
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR')")
+    @GetMapping("/mine")
+    public List<AppointmentEntity> getMyAppointments() {
+        return appointmentService.getAppointmentsForCurrentUser();
+    }
+
 }
