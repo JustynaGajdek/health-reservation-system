@@ -1,9 +1,11 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
 import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
@@ -65,6 +67,25 @@ public class AppointmentService {
     public List<AppointmentEntity> getUnassignedAppointments() {
         return appointmentRepository.findByDoctorIsNull();
     }
+
+    public void createConfirmedAppointment(AppointmentCreationDto dto) {
+        PatientEntity patient = userRepository.findById(dto.getPatientId())
+                .orElseThrow(() -> new RuntimeException("Patient not found"))
+                .getPatient();
+
+        DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setPatient(patient);
+        appointment.setDoctor(doctor);
+        appointment.setAppointmentDate(dto.getAppointmentDate());
+        appointment.setAppointmentType(dto.getAppointmentType());
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+
+        appointmentRepository.save(appointment);
+    }
+
 
 
 }

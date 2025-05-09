@@ -1,5 +1,6 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
+import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
@@ -31,4 +32,12 @@ public class ReceptionistController {
         appointmentService.assignDoctorAndConfirm(id, dto);
         return ResponseEntity.ok("Appointment assigned and confirmed.");
     }
+
+    @PreAuthorize("hasRole('RECEPTIONIST')")
+    @PostMapping("/appointments")
+    public ResponseEntity<String> createAppointmentOnSite(@RequestBody AppointmentCreationDto dto) {
+        appointmentService.createConfirmedAppointment(dto);
+        return ResponseEntity.ok("Appointment created and confirmed.");
+    }
+
 }
