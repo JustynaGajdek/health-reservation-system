@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/appointments")
-@PreAuthorize("hasRole('PATIENT')")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
