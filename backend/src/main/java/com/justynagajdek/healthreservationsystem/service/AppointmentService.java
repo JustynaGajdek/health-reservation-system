@@ -1,11 +1,14 @@
 package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
+import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
+import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +18,12 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository) {
+    private final DoctorRepository doctorRepository;
+
+    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository, DoctorRepository doctorRepository) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     public void createPendingAppointment(AppointmentRequestDto dto) {
@@ -39,4 +45,19 @@ public class AppointmentService {
 
         appointmentRepository.save(appointment);
     }
+
+    public void assignDoctorAndConfirm(Long appointmentId, AssignAppointmentDto dto) {
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        appointment.setDoctor(doctor);
+        appointment.setAppointmentDate(dto.getAppointmentDate());
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+
+        appointmentRepository.save(appointment);
+    }
+
 }
