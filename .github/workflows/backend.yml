@@ -11,6 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPRING_PROFILES_ACTIVE: test
+      JWT_SECRET: test-test-test-12345678901234567890
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/health-reservation-system
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: asd
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    
 
     services:
       postgres:
@@ -46,7 +52,7 @@ jobs:
 
       - name: Build with Maven
         working-directory: ./backend
-        run: mvn clean install -Dspring.profiles.active=test
+        run: mvn -B clean install -Dspring.profiles.active=test
 
       - name: Build Docker image
         working-directory: ./backend
