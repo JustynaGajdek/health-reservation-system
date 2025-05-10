@@ -10,6 +10,7 @@ A full-stack medical appointment booking system that allows patients to register
 * Spring Security + JWT authentication
 * PostgreSQL
 * Liquibase (DB migrations)
+* * Docker Compose – backend & database
 
 **Frontend**
 * React 18
@@ -19,7 +20,8 @@ A full-stack medical appointment booking system that allows patients to register
 
 **Dev & Tools**
 * Maven
-* Docker (planned)
+* Docker & Docker Compose
+* GitHub Actions (CI)
 * Postman (testing)
 
 ## 🩺 Features
@@ -36,20 +38,23 @@ A full-stack medical appointment booking system that allows patients to register
 ```
 health-reservation-system/
 ├── backend/ # Spring Boot backend
-│ ├── src/
-│ │ ├── main/
-│ │ │ ├── java/com/... # Controllers, services, entities, etc.
-│ │ │ └── resources/ # application.properties, Liquibase changelogs
-│ │ └── test/ # Unit and integration tests
-│ ├── pom.xml
-│ └── mvnw, mvnw.cmd # Maven wrapper
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── .env (not committed)
+│   ├── src/
+│   │ ├── main/
+│   │ │ ├── java/com/... # Controllers, services, entities, etc.
+│   │ │ └── resources/ # application.properties, Liquibase changelogs
+│   │ └── test/ # Unit and integration tests
+│   ├── pom.xml
+│   └── mvnw, mvnw.cmd # Maven wrapper
 │
 ├── frontend/ # React frontend
 │ ├── public/
 │ └── src/
-│ ├── HomePage.jsx
-│ ├── LoginForm.jsx
-│ └── ...
+│      ├── HomePage.jsx
+│      ├── LoginForm.jsx
+│      └── ...
 │
 ├── docs/ # Technical documentation
 │ ├── ARCHITECTURE.md
@@ -66,24 +71,54 @@ health-reservation-system/
 * Java 17+
 * Node.js (for frontend)
 * PostgreSQL (or Docker)
+*  Docker & Docker Compose
 
-**Backend**
-```
+### 🐳 Dockerized Run (backend + database)
+
+1. Build JAR manually:
+```bash
 cd backend
-./mvnw spring-boot:run
+./mvnw clean package -DskipTests
 ```
+2. Start containers:
+```bash
+cd backend
+docker compose up --build
+```
+_Backend runs on `http://localhost:8080`, PostgreSQL on port `5433`._
+
+
 **Frontend**
 ```
 cd frontend
 npm install
 npm run dev
 ```
+
+### ⚙️ Local dev without Docker
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
 **Database setup**
 Run Liquibase migrations:
 ```
 cd backend
 ./mvnw liquibase:update
 ```
+
+## ✅ Environment
+Create `.env` file inside `/backend`:
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/health-reservation-system
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=asd
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+JWT_SECRET=your-test-jwt-secret
+```
+Use `.env.example` as a base template.
+
 
 ## 🧪 Tests
 
@@ -99,7 +134,17 @@ To run tests:
 cd backend
 ./mvnw test
 ```
-H2 in-memory database is used for integration testing.
+
+## 🧪 CI/CD
+
+GitHub Actions workflow:
+- runs on pull requests and pushes to main
+- builds backend with Maven
+- runs unit & integration tests
+- supports env variables in CI only
+
+Workflow file: `.github/workflows/backend.yml`
+
 
 ## 📚 Documentation
 - [Architecture Overview](docs/ARCHITECTURE.md)
@@ -108,7 +153,7 @@ H2 in-memory database is used for integration testing.
 - [ER Diagram](docs/db_schema_diagram.png.png)
 
 ## 📌 Status
-✅ MVP in progress — login, registration, appointment booking and vaccine records complete.
+✅ MVP in progress — login, registration, appointment booking complete.
 🔜 Coming soon — patient panel, admin dashboard, email notifications.
 
 ## 🧑‍💻 Author
