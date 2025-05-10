@@ -38,4 +38,6 @@ public class PatientEntity {
 
     @OneToMany(mappedBy = "patient")
     private List<AppointmentEntity> appointments;
+
 }
+

@@ -38,5 +38,10 @@ public class AppointmentEntity {
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private DoctorEntity doctor;
+
+    public void setPatient(PatientEntity patient) {
+        this.patient = patient;
+    }
+
 }
 

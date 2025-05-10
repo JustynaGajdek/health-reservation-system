@@ -1,0 +1,22 @@
+# Maven
+.mvn/
+**/mvnw
+**/mvnw.cmd
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Env/secrets
+.env
