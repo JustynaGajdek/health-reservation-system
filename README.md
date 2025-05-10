@@ -10,7 +10,7 @@ A full-stack medical appointment booking system that allows patients to register
 * Spring Security + JWT authentication
 * PostgreSQL
 * Liquibase (DB migrations)
-* * Docker Compose – backend & database
+* Docker Compose – backend & database
 
 **Frontend**
 * React 18
