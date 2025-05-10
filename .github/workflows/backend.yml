@@ -46,7 +46,7 @@ jobs:
 
       - name: Build with Maven
         working-directory: ./backend
-        run: mvn clean install -DskipTests=false
+        run: mvn clean install -Dspring.profiles.active=test
 
       - name: Build Docker image
         working-directory: ./backend
