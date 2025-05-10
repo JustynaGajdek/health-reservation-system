@@ -39,4 +39,16 @@ class JwtTokenUtilTest {
         String invalidToken = "invalid.token.value";
         assertFalse(jwtTokenUtil.validateJwtToken(invalidToken));
     }
+
+    @Test
+    public void testGetUsernameFromJwtToken_NullToken() {
+        String result = jwtTokenUtil.getUsernameFromJwtToken(null);
+        assertNull(result, "Expected null when token is null");
+    }
+
+    @Test
+    public void testGetUsernameFromJwtToken_EmptyToken() {
+        String result = jwtTokenUtil.getUsernameFromJwtToken("");
+        assertNull(result, "Expected null when token is empty");
+    }
 }

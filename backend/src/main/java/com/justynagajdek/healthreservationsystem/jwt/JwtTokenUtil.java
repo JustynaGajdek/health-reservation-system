@@ -30,13 +30,24 @@ public class JwtTokenUtil {
     }
 
     public String getUsernameFromJwtToken(String token) {
+        if (token == null || !token.contains(".")) {
+            System.err.println("Invalid or missing token: " + token);
+            return null;
+        }
+
+        try {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    } catch (JwtException e) {
+            System.err.println("Failed to parse token: " + e.getMessage());
+            return null;
+        }
     }
+
 
     public boolean validateJwtToken(String authToken) {
         try {
