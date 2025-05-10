@@ -22,11 +22,11 @@ services:
     image: postgres:15
     container_name: health-postgres
     environment:
-      POSTGRES_DB:       healthdb
+      POSTGRES_DB:       health-reservation-system
       POSTGRES_USER:     postgres
       POSTGRES_PASSWORD: asd
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
