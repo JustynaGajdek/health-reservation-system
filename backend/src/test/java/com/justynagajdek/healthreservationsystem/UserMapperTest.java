@@ -6,13 +6,16 @@ import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-@ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {UserMapper.class})
 class UserMapperTest {
 
     @Autowired
