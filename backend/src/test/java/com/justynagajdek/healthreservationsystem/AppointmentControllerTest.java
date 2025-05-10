@@ -45,7 +45,7 @@ class AppointmentControllerTest {
     private AppointmentMapper appointmentMapper;
 
     @Test
-    @WithMockUser(roles = "PATIENT")                      
+    @WithMockUser(roles = "PATIENT")
     void shouldReturnMyAppointments() throws Exception {
         // given
         AppointmentEntity entity = new AppointmentEntity();

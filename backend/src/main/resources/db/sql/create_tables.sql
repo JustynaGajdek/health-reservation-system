@@ -31,6 +31,7 @@ CREATE TABLE patients (
     pesel VARCHAR(11) UNIQUE NOT NULL,
     birth_date DATE NOT NULL,
     guardian_id INT REFERENCES patients(id) ON DELETE SET NULL,
+    address VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

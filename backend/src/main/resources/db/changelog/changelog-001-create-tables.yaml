@@ -3,6 +3,8 @@ databaseChangeLog:
       id: 1
       author: justyna
       changes:
+
+        # users
         - createTable:
             tableName: users
             ifNotExists: true
@@ -52,6 +54,56 @@ databaseChangeLog:
                   type: timestamp
                   defaultValueComputed: CURRENT_TIMESTAMP
 
+        # patients
+        - createTable:
+            tableName: patients
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    unique: true
+                    foreignKeyName: fk_patient_user
+                    references: users(id)
+              - column:
+                  name: pesel
+                  type: varchar(11)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: birth_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: guardian_id
+                  type: int
+              - column:
+                  name: address
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        # self-referencing FK dla guardian_id
+        - addForeignKeyConstraint:
+            baseTableName: patients
+            baseColumnNames: guardian_id
+            referencedTableName: patients
+            referencedColumnNames: id
+            constraintName: fk_patients_guardian
+            onDelete: SET NULL
+
+        # doctors
         - createTable:
             tableName: doctors
             ifNotExists: true
@@ -62,16 +114,29 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
-                  name: specialization
-                  type: varchar(100)
-              - column:
                   name: user_id
                   type: int
                   constraints:
                     nullable: false
+                    unique: true
                     foreignKeyName: fk_doctor_user
                     references: users(id)
+              - column:
+                  name: specialization
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: office_number
+                  type: varchar(10)
+              - column:
+                  name: working_hours
+                  type: jsonb
+              - column:
+                  name: bio
+                  type: text
 
+        # receptionists
         - createTable:
             tableName: receptionists
             ifNotExists: true
@@ -89,26 +154,7 @@ databaseChangeLog:
                     foreignKeyName: fk_receptionist_user
                     references: users(id)
 
-        - createTable:
-            tableName: patients
-            ifNotExists: true
-            columns:
-              - column:
-                  name: id
-                  type: serial
-                  constraints:
-                    primaryKey: true
-              - column:
-                  name: user_id
-                  type: int
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_patient_user
-                    references: users(id)
-              - column:
-                  name: date_of_birth
-                  type: date
-
+        # appointments
         - createTable:
             tableName: appointments
             ifNotExists: true
@@ -119,13 +165,6 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
-                  name: doctor_id
-                  type: int
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_appointment_doctor
-                    references: doctors(id)
-              - column:
                   name: patient_id
                   type: int
                   constraints:
@@ -133,18 +172,29 @@ databaseChangeLog:
                     foreignKeyName: fk_appointment_patient
                     references: patients(id)
               - column:
-                  name: appointment_time
-                  type: timestamp
+                  name: doctor_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_appointment_doctor
+                    references: doctors(id)
+              - column:
+                  name: appointment_type
+                  type: varchar(50)
                   constraints:
                     nullable: false
               - column:
-                  name: type
-                  type: varchar(100)
+                  name: appointment_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
               - column:
                   name: status
                   type: varchar(50)
                   defaultValue: PENDING
 
+
+        # prescriptions
         - createTable:
             tableName: prescriptions
             ifNotExists: true
@@ -155,19 +205,82 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
-                  name: appointment_id
+                  name: patient_id
                   type: int
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_prescription_appointment
-                    references: appointments(id)
+                    foreignKeyName: fk_presc_patient
+                    references: patients(id)
               - column:
-                  name: medication
-                  type: varchar(255)
+                  name: doctor_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_presc_doctor
+                    references: doctors(id)
               - column:
-                  name: dosage
-                  type: varchar(100)
-              - column:
-                  name: issued_at
+                  name: issue_date
                   type: timestamp
                   defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: prescription_details
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(50)
+                  defaultValue: PENDING
+
+        # vaccinations
+        - createTable:
+            tableName: vaccinations
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: patient_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_vacc_patient
+                    references: patients(id)
+              - column:
+                  name: vaccine_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: vaccination_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_mandatory
+                  type: boolean
+                  constraints:
+                    nullable: false
+
+        # indeksy
+        - createIndex:
+            tableName: users
+            indexName: idx_users_email
+            columns:
+              - column:
+                  name: email
+        - createIndex:
+            tableName: patients
+            indexName: idx_patients_pesel
+            columns:
+              - column:
+                  name: pesel
+        - createIndex:
+            tableName: appointments
+            indexName: idx_appointments_date
+            columns:
+              - column:
+                  name: appointment_date
