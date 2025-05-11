@@ -81,7 +81,7 @@ class UserMapperTest {
         assertEquals("Lis", dto.getLastName());
         assertEquals("basia@example.com", dto.getEmail());
         assertEquals("999888777", dto.getPhone());
-        assertEquals("RECEPTIONIST", dto.getRole()); 
+        assertEquals("RECEPTIONIST", dto.getRole());
     }
 
 }
