@@ -15,4 +15,20 @@ public class PrescriptionMapper {
         entity.setInstructions(dto.getInstructions());
         return entity;
     }
+
+    public PrescriptionDto toDto(PrescriptionEntity entity) {
+        PrescriptionDto dto = new PrescriptionDto();
+        dto.setId(entity.getId());
+        dto.setMedicineName(entity.getMedicineName());
+        dto.setDosage(entity.getDosage());
+        dto.setInstructions(entity.getInstructions());
+        dto.setIssuedAt(entity.getIssuedAt());
+
+        if (entity.getAppointment() != null) {
+            dto.setAppointmentId(entity.getAppointment().getId());
+        }
+
+        return dto;
+    }
+
 }

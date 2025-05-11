@@ -33,5 +33,7 @@ public class PrescriptionEntity {
 
     @Column
     private LocalDateTime issuedAt = LocalDateTime.now();
-}
+
+    }
+
 
