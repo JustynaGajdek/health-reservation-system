@@ -31,8 +31,8 @@ public class PrescriptionController {
     @PreAuthorize("hasRole('DOCTOR')")
     @PostMapping
     public ResponseEntity<PrescriptionDto> createPrescription(@RequestBody PrescriptionDto dto) {
-        PrescriptionEntity saved = prescriptionService.createPrescription(dto);
-        return ResponseEntity.ok(prescriptionMapper.toDto(saved));
+        PrescriptionDto saved = prescriptionService.createPrescription(dto);
+        return ResponseEntity.ok(saved);
     }
     // Lekarz – pobranie recept dla wizyty
     @PreAuthorize("hasRole('DOCTOR')")

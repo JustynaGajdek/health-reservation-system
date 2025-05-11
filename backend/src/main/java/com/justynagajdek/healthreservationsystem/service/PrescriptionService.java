@@ -31,10 +31,13 @@ public class PrescriptionService {
         this.userRepository = userRepository;
     }
 
-    public PrescriptionEntity createPrescription(PrescriptionDto dto) {
+    public PrescriptionDto createPrescription(PrescriptionDto dto) {
         AppointmentEntity appointment = appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
-        return prescriptionRepository.save(mapper.toEntity(dto, appointment));
+        PrescriptionEntity entity = mapper.toEntity(dto, appointment);
+        PrescriptionEntity saved = prescriptionRepository.save(entity);
+
+        return mapper.toDto(saved);
     }
 
     public List<PrescriptionEntity> getPrescriptionsForAppointment(Long appointmentId) {
