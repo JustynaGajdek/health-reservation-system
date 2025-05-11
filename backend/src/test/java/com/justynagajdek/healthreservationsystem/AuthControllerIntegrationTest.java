@@ -69,7 +69,7 @@ public class AuthControllerIntegrationTest {
         loginDto.setEmail("john.doe@email.com");
         loginDto.setPassword("pas123");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ public class AuthControllerIntegrationTest {
         loginDto.setEmail("john.doe@email.com");
         loginDto.setPassword("wrongPassword");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isUnauthorized());
