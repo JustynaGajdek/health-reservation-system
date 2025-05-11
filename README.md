@@ -43,9 +43,23 @@ health-reservation-system/
 │   ├── .env (not committed)
 │   ├── src/
 │   │ ├── main/
-│   │ │ ├── java/com/... # Controllers, services, entities, etc.
+│   │ │ ├── java/com/justynagajdek/healthreservationsystem/
+│   │ │ │  ├── config/
+│   │ │ │  ├── controller/
+│   │ │ │  ├── dto/
+│   │ │ │  ├── entity/
+│   │ │ │  ├── enums/
+│   │ │ │  ├── jwt/
+│   │ │ │  ├── mapper/
+│   │ │ │  ├── payload/
+│   │ │ │  ├── repository/
+│   │ │ │  └── service/
 │   │ │ └── resources/ # application.properties, Liquibase changelogs
 │   │ └── test/ # Unit and integration tests
+│   └── resources/
+│   │  ├── db/
+│   │  ├── static/
+│   │  └── templates/
 │   ├── pom.xml
 │   └── mvnw, mvnw.cmd # Maven wrapper
 │
@@ -145,12 +159,57 @@ GitHub Actions workflow:
 
 Workflow file: `.github/workflows/backend.yml`
 
+## 📖 API Docs (Swagger UI)
+
+The backend uses [Springdoc OpenAPI](https://springdoc.org/) to automatically generate and serve interactive API documentation.
+
+To access the documentation locally, start the backend  (`./mvnw spring-boot:run` or via Docker) and go to:
+
+`http://localhost:8080/swagger-ui.html`
+
+You can test all available endpoints directly in the browser, including:
+- `POST /login`
+- `POST /register`
+- `GET /admin/users`
+- `PUT /admin/users/approve/{id}`
+- ...and more.
+
+Authentication-required endpoints support `Bearer` JWT tokens.
+
+The Swagger configuration can be found in:
+- `OpenApiConfig.java` – metadata (title, version, description)
+- `SecurityConfig.java` – public access granted to `/swagger-ui/**` and `/v3/api-docs/**`
+
+
+## ⚙️ Configuration: `application.yml`
+This project uses `application.yml` instead of `application.properties` for cleaner, structured configuration.
+
+```yaml
+Main configuration values:
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+app:
+  jwtSecret: ${JWT_SECRET}
+  jwtExpirationMs: 3600000
+```
+Secrets and credentials are loaded from `.env` or system environment variables (e.g. in Docker Compose or CI pipelines).
 
 ## 📚 Documentation
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [API Endpoints](docs/api_endpoints.md)
 - [Full Database Documentation (PL)](docs/database-schema.md)
 - [ER Diagram](docs/db_schema_diagram.png.png)
+- [Swagger UI – interactive API docs](http://localhost:8080/swagger-ui.html)
+
 
 ## 📌 Status
 ✅ MVP in progress — login, registration, appointment booking complete.
