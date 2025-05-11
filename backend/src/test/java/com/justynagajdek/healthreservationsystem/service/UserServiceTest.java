@@ -114,4 +114,47 @@ public class UserServiceTest {
 
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(email));
     }
+
+    @Test
+    void shouldReturnUsersByStatus() {
+        UserEntity u1 = new UserEntity();
+        u1.setStatus(AccountStatus.PENDING);
+
+        UserEntity u2 = new UserEntity();
+        u2.setStatus(AccountStatus.ACTIVE);
+
+        when(userRepository.findByStatus(AccountStatus.PENDING)).thenReturn(List.of(u1));
+
+        List<UserEntity> result = userService.getUsersByStatus(AccountStatus.PENDING);
+
+        assertEquals(1, result.size());
+        assertEquals(AccountStatus.PENDING, result.get(0).getStatus());
+    }
+
+    @Test
+    void shouldThrowWhenApprovingNonexistentUser() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> userService.approveUser(99L));
+    }
+
+    @Test
+    void shouldRegisterUserWithDefaultRoleWhenRoleIsNull() {
+        SignUpDto dto = new SignUpDto();
+        dto.setEmail("no-role@example.com");
+        dto.setPassword("abc");
+        dto.setFirstName("No");
+        dto.setLastName("Role");
+        dto.setPhone("123456789");
+        dto.setRole(null);
+
+        when(userRepository.findByEmail(dto.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(dto.getPassword())).thenReturn("encoded");
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        UserEntity saved = userService.registerNewUser(dto);
+
+        assertEquals(Role.PATIENT, saved.getRole(), "Default role should be PATIENT");
+    }
+
 }
