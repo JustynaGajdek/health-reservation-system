@@ -43,4 +43,45 @@ class UserMapperTest {
         assertEquals(Role.RECEPTIONIST, entity.getRole());
         assertEquals(AccountStatus.PENDING, entity.getStatus());
     }
+
+    @Test
+    void shouldMapUserEntityToUserDto() {
+        UserEntity entity = new UserEntity();
+        entity.setId(1L);
+        entity.setFirstName("Ala");
+        entity.setLastName("Nowak");
+        entity.setEmail("ala@example.com");
+        entity.setPhoneNumber("555111222");
+        entity.setRole(Role.PATIENT);
+        entity.setStatus(AccountStatus.ACTIVE);
+
+        var dto = userMapper.toDto(entity);
+
+        assertEquals(1L, dto.getId());
+        assertEquals("Ala", dto.getFirstName());
+        assertEquals("Nowak", dto.getLastName());
+        assertEquals("ala@example.com", dto.getEmail());
+        assertEquals("555111222", dto.getPhone());
+        assertEquals(Role.PATIENT, dto.getRole());
+        assertEquals(AccountStatus.ACTIVE, dto.getStatus());
+    }
+
+    @Test
+    void shouldMapUserEntityToSignUpDto() {
+        UserEntity entity = new UserEntity();
+        entity.setFirstName("Basia");
+        entity.setLastName("Lis");
+        entity.setEmail("basia@example.com");
+        entity.setPhoneNumber("999888777");
+        entity.setRole(Role.RECEPTIONIST);
+
+        var dto = userMapper.mapToSignUpDto(entity);
+
+        assertEquals("Basia", dto.getFirstName());
+        assertEquals("Lis", dto.getLastName());
+        assertEquals("basia@example.com", dto.getEmail());
+        assertEquals("999888777", dto.getPhone());
+        assertEquals("RECEPTIONIST", dto.getRole()); 
+    }
+
 }
