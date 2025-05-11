@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.justynagajdek.healthreservationsystem.dto.LoginDto;

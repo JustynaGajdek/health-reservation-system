@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.security;
 
 import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
 import io.jsonwebtoken.JwtException;

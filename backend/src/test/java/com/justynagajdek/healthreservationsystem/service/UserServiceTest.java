@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
