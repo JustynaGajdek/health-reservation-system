@@ -4,6 +4,7 @@ import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,13 +82,31 @@ public class UserServiceTest {
     }
 
     @Test
-    void shouldDeleteUserById() {
+    void shouldDeleteUserWhenExists() {
+        // given
         Long userId = 1L;
+        UserEntity existing = new UserEntity();
+        existing.setId(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existing));
 
+        // when
         userService.deleteUser(userId);
 
-        verify(userRepository, times(1)).deleteById(userId);
+        // then
+        verify(userRepository, times(1)).delete(existing);
+        verify(userRepository, never()).deleteById(any());
     }
+
+    @Test
+    void shouldThrowWhenUserNotFound() {
+        // given
+        Long userId = 42L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // when / then
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
+    }
+
 
     @Test
     void shouldLoadUserByUsernameSuccessfully() {
@@ -135,7 +154,7 @@ public class UserServiceTest {
     void shouldThrowWhenApprovingNonexistentUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> userService.approveUser(99L));
+        assertThrows(UserNotFoundException.class, () -> userService.approveUser(99L));
     }
 
     @Test
@@ -156,5 +175,20 @@ public class UserServiceTest {
 
         assertEquals(Role.PATIENT, saved.getRole(), "Default role should be PATIENT");
     }
+
+    @Test
+    void shouldApproveUserWhenExists() {
+        Long id = 5L;
+        UserEntity u = new UserEntity();
+        u.setId(id);
+        u.setStatus(AccountStatus.PENDING);
+        when(userRepository.findById(id)).thenReturn(Optional.of(u));
+
+        userService.approveUser(id);
+
+        assertEquals(AccountStatus.ACTIVE, u.getStatus());
+        verify(userRepository).save(u);
+    }
+
 
 }

@@ -3,7 +3,9 @@ package com.justynagajdek.healthreservationsystem.service;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -19,6 +21,7 @@ import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import java.util.List;
 
 @Service
+@Primary
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -44,7 +47,9 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        userRepository.delete(user);
     }
 
     public UserEntity registerNewUser(SignUpDto signupDto) {
@@ -78,7 +83,7 @@ public class UserService implements UserDetailsService {
 
     public void approveUser(Long id) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(id));
         user.setStatus(AccountStatus.ACTIVE);
         userRepository.save(user);
     }
