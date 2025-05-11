@@ -1,7 +1,8 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
-import com.justynagajdek.healthreservationsystem.entity.UserEntity;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
+import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +16,12 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, UserMapper userMapper) {
+
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @GetMapping("/dashboard")
@@ -26,8 +30,10 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public List<UserEntity> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserDto> getAllUsers() {
+        return userService.getAllUsers().stream()
+                .map(userMapper::toDto)
+                .toList();
     }
 
 
@@ -38,8 +44,10 @@ public class AdminController {
     }
 
     @GetMapping("/users/pending")
-    public List<UserEntity> getPendingUsers() {
-        return userService.getUsersByStatus(AccountStatus.PENDING);
+    public List<UserDto> getPendingUsers() {
+        return userService.getUsersByStatus(AccountStatus.PENDING).stream()
+                .map(userMapper::toDto)
+                .toList();
     }
 
     @PutMapping("/users/approve/{id}")

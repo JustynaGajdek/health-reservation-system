@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
@@ -53,7 +53,7 @@ public class UserRegistrationIntegrationTest {
         dto.setRole("PATIENT");
 
         // when + then
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())

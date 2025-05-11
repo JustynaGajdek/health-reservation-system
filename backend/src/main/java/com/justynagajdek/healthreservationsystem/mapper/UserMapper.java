@@ -1,6 +1,7 @@
 package com.justynagajdek.healthreservationsystem.mapper;
 
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
@@ -39,4 +40,19 @@ public class UserMapper {
 
         return dto;
     }
+
+    public UserDto toDto(UserEntity entity) {
+        if (entity == null) return null;
+
+        return UserDto.builder()
+                .id(entity.getId())
+                .email(entity.getEmail())
+                .firstName(entity.getFirstName())
+                .lastName(entity.getLastName())
+                .phone(entity.getPhoneNumber())
+                .role(entity.getRole())
+                .status(entity.getStatus())
+                .build();
+    }
+
 }

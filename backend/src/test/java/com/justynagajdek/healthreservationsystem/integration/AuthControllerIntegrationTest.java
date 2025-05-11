@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.justynagajdek.healthreservationsystem.dto.LoginDto;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-public class HomeControllerIntegrationTest {
+public class AuthControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +69,7 @@ public class HomeControllerIntegrationTest {
         loginDto.setEmail("john.doe@email.com");
         loginDto.setPassword("pas123");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ public class HomeControllerIntegrationTest {
         loginDto.setEmail("john.doe@email.com");
         loginDto.setPassword("wrongPassword");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isUnauthorized());

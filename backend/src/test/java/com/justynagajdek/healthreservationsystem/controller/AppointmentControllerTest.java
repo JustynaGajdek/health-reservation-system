@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem;
+package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.controller.AppointmentController;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentDto;
