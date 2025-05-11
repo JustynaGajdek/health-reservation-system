@@ -56,4 +56,16 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
+    public List<PrescriptionDto> getPrescriptionsByPatientId(Long patientId) {
+        PatientEntity patient = userRepository.findById(patientId)
+                .map(UserEntity::getPatient)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+
+        List<PrescriptionEntity> prescriptions = prescriptionRepository.findByAppointmentPatient(patient);
+        return prescriptions.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+
 }
