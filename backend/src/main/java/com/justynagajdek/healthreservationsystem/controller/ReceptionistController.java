@@ -45,11 +45,5 @@ public class ReceptionistController {
         return ResponseEntity.ok("Appointment created and confirmed.");
     }
 
-    @PreAuthorize("hasRole('RECEPTIONIST')")
-    @GetMapping("/prescriptions")
-    public ResponseEntity<List<PrescriptionDto>> getPrescriptionsByPatient(@RequestParam Long patientId) {
-        List<PrescriptionDto> prescriptions = prescriptionService.getPrescriptionsByPatientId(patientId);
-        return ResponseEntity.ok(prescriptions);
-    }
 
 }

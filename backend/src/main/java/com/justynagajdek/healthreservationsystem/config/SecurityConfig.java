@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 .requestMatchers("/doctor/**").hasAnyRole("DOCTOR", "ADMIN")
                                 .requestMatchers("/receptionist/**").hasAnyRole("RECEPTIONIST", "ADMIN")
                                 .requestMatchers("/patient/**").hasAnyRole("PATIENT","RECEPTIONIST", "ADMIN")
+                                .requestMatchers("/prescriptions/**").hasAnyRole("DOCTOR", "PATIENT", "RECEPTIONIST")
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

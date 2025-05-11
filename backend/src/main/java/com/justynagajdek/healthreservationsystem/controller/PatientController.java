@@ -23,15 +23,5 @@ public class PatientController {
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
-    @GetMapping("/prescriptions")
-    public ResponseEntity<List<PrescriptionDto>> getMyPrescriptions(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
 
-        String email = jwtTokenUtil.getUsernameFromJwtToken(token);
-        List<PrescriptionDto> prescriptions = prescriptionService.getPrescriptionsForCurrentPatient(email);
-        return ResponseEntity.ok(prescriptions);
-    }
 }
