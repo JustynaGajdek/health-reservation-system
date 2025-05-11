@@ -51,5 +51,5 @@ public class ReceptionistController {
         List<PrescriptionDto> prescriptions = prescriptionService.getPrescriptionsByPatientId(patientId);
         return ResponseEntity.ok(prescriptions);
     }
-    
+
 }
