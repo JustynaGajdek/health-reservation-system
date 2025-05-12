@@ -3,6 +3,8 @@ package com.justynagajdek.healthreservationsystem.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class SignUpDto {
@@ -13,6 +15,9 @@ public class SignUpDto {
     private String phone;
     private String password;
     private String role;
+    private String pesel;
+    private LocalDate dateOfBirth;
+    private String address;
 
     public String getFirstName() {
         return firstName;

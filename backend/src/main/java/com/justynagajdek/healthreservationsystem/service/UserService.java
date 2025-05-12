@@ -1,5 +1,6 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.PatientDto;
 import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
@@ -74,16 +75,13 @@ public class UserService implements UserDetailsService {
         user.setFirstName(signupDto.getFirstName());
         user.setLastName(signupDto.getLastName());
         user.setPhoneNumber(signupDto.getPhone());
-
-        if (signupDto.getRole() != null) {
-            user.setRole(Role.valueOf(signupDto.getRole().toUpperCase()));
-        } else {
-            user.setRole(Role.PATIENT);
-        }
-
+        user.setRole(signupDto.getRole() != null
+                ? Role.valueOf(signupDto.getRole().toUpperCase())
+                : Role.PATIENT
+        );
         user.setStatus(AccountStatus.PENDING);
+       return userRepository.save(user);
 
-        return userRepository.save(user);
     }
 
     public List<UserEntity> getUsersByStatus(AccountStatus status) {
@@ -103,17 +101,11 @@ public class UserService implements UserDetailsService {
     }
 
     public UserEntity updateProfile(String email, UserDto dto) {
-        UserEntity user = findByEmail(email);
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setPhoneNumber(dto.getPhone());
-        return userRepository.save(user);
-    }
-
-    @Transactional(readOnly = true)
-    public PatientEntity getByPesel(String pesel) {
-        return patientRepository.findByPesel(pesel)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient with PESEL " + pesel + " not found"));
+        UserEntity u = findByEmail(email);
+        u.setFirstName(dto.getFirstName());
+        u.setLastName(dto.getLastName());
+        u.setPhoneNumber(dto.getPhone());
+        return userRepository.save(u);
     }
 
 }
