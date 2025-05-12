@@ -1,10 +1,16 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundException;
 import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
+import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,10 +31,13 @@ import java.util.List;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       PatientRepository patientRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.patientRepository = patientRepository;
     }
 
     @Override
@@ -86,6 +95,25 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(id));
         user.setStatus(AccountStatus.ACTIVE);
         userRepository.save(user);
+    }
+
+    public UserEntity findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    }
+
+    public UserEntity updateProfile(String email, UserDto dto) {
+        UserEntity user = findByEmail(email);
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhoneNumber(dto.getPhone());
+        return userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public PatientEntity getByPesel(String pesel) {
+        return patientRepository.findByPesel(pesel)
+                .orElseThrow(() -> new ResourceNotFoundException("Pacjent z pesel " + pesel + " nie znaleziony"));
     }
 
 }
