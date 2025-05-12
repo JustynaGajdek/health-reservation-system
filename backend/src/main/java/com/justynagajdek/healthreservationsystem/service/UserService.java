@@ -113,7 +113,7 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public PatientEntity getByPesel(String pesel) {
         return patientRepository.findByPesel(pesel)
-                .orElseThrow(() -> new ResourceNotFoundException("Pacjent z pesel " + pesel + " nie znaleziony"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient with PESEL " + pesel + " not found"));
     }
 
 }

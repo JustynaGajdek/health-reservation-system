@@ -1,10 +1,14 @@
 package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundException;
 import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
+import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +36,9 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+    @Mock
+    private PatientRepository patientRepository;
+
 
     @BeforeEach
     void setUp() {
@@ -189,6 +196,64 @@ public class UserServiceTest {
         assertEquals(AccountStatus.ACTIVE, u.getStatus());
         verify(userRepository).save(u);
     }
+
+    @Test
+    void shouldReturnPatientByPesel() {
+        String pesel = "12345678901";
+        PatientEntity expected = new PatientEntity();
+        expected.setPesel(pesel);
+
+        when(patientRepository.findByPesel(pesel)).thenReturn(Optional.of(expected));
+
+        PatientEntity result = userService.getByPesel(pesel);
+
+        assertEquals(pesel, result.getPesel());
+    }
+
+    @Test
+    void shouldThrowWhenPatientNotFoundByPesel() {
+        String pesel = "00000000000";
+        when(patientRepository.findByPesel(pesel)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getByPesel(pesel));
+    }
+
+    @Test
+    void shouldUpdateUserProfileSuccessfully() {
+        // given
+        String email = "anna@example.com";
+        UserDto dto = new UserDto();
+        dto.setFirstName("Anna");
+        dto.setLastName("Nowak");
+        dto.setPhone("123456789");
+
+        UserEntity existing = new UserEntity();
+        existing.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existing));
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        // when
+        UserEntity result = userService.updateProfile(email, dto);
+
+        // then
+        assertEquals("Anna", result.getFirstName());
+        assertEquals("Nowak", result.getLastName());
+        assertEquals("123456789", result.getPhoneNumber());
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingProfileOfNonexistentUser() {
+        String email = "missing@example.com";
+        UserDto dto = new UserDto();
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class, () -> userService.updateProfile(email, dto));
+    }
+
+
 
 
 }
