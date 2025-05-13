@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
 import com.justynagajdek.healthreservationsystem.payload.JwtResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +32,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+            );
 
-        // Jeśli uwierzytelnienie się powiedzie, zostanie wygenerowany token JWT
-        String jwt = jwtTokenUtil.generateJwtToken(loginRequest.getEmail());
-        return ResponseEntity.ok(new JwtResponse(jwt));
+            // Jeśli uwierzytelnienie się powiedzie, zostanie wygenerowany token JWT
+            String jwt = jwtTokenUtil.generateJwtToken(loginRequest.getEmail());
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Error: Bad credentials");
+        }
     }
 
     @PostMapping("/register")
@@ -50,5 +57,5 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
-}
+    }
 }

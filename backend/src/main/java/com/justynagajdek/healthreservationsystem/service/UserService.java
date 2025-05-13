@@ -1,9 +1,18 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.PatientDto;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundException;
+import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
+import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -19,13 +28,17 @@ import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import java.util.List;
 
 @Service
+@Primary
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       PatientRepository patientRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.patientRepository = patientRepository;
     }
 
     @Override
@@ -44,7 +57,9 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        userRepository.delete(user);
     }
 
     public UserEntity registerNewUser(SignUpDto signupDto) {
@@ -60,16 +75,13 @@ public class UserService implements UserDetailsService {
         user.setFirstName(signupDto.getFirstName());
         user.setLastName(signupDto.getLastName());
         user.setPhoneNumber(signupDto.getPhone());
-
-        if (signupDto.getRole() != null) {
-            user.setRole(Role.valueOf(signupDto.getRole().toUpperCase()));
-        } else {
-            user.setRole(Role.PATIENT);
-        }
-
+        user.setRole(signupDto.getRole() != null
+                ? Role.valueOf(signupDto.getRole().toUpperCase())
+                : Role.PATIENT
+        );
         user.setStatus(AccountStatus.PENDING);
+       return userRepository.save(user);
 
-        return userRepository.save(user);
     }
 
     public List<UserEntity> getUsersByStatus(AccountStatus status) {
@@ -78,9 +90,22 @@ public class UserService implements UserDetailsService {
 
     public void approveUser(Long id) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(id));
         user.setStatus(AccountStatus.ACTIVE);
         userRepository.save(user);
+    }
+
+    public UserEntity findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    }
+
+    public UserEntity updateProfile(String email, UserDto dto) {
+        UserEntity u = findByEmail(email);
+        u.setFirstName(dto.getFirstName());
+        u.setLastName(dto.getLastName());
+        u.setPhoneNumber(dto.getPhone());
+        return userRepository.save(u);
     }
 
 }

@@ -1,11 +1,15 @@
 package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundException;
+import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
+import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,6 +35,7 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
 
     @BeforeEach
     void setUp() {
@@ -81,13 +86,31 @@ public class UserServiceTest {
     }
 
     @Test
-    void shouldDeleteUserById() {
+    void shouldDeleteUserWhenExists() {
+        // given
         Long userId = 1L;
+        UserEntity existing = new UserEntity();
+        existing.setId(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existing));
 
+        // when
         userService.deleteUser(userId);
 
-        verify(userRepository, times(1)).deleteById(userId);
+        // then
+        verify(userRepository, times(1)).delete(existing);
+        verify(userRepository, never()).deleteById(any());
     }
+
+    @Test
+    void shouldThrowWhenUserNotFound() {
+        // given
+        Long userId = 42L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // when / then
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
+    }
+
 
     @Test
     void shouldLoadUserByUsernameSuccessfully() {
@@ -114,4 +137,101 @@ public class UserServiceTest {
 
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(email));
     }
+
+    @Test
+    void shouldReturnUsersByStatus() {
+        UserEntity u1 = new UserEntity();
+        u1.setStatus(AccountStatus.PENDING);
+
+        UserEntity u2 = new UserEntity();
+        u2.setStatus(AccountStatus.ACTIVE);
+
+        when(userRepository.findByStatus(AccountStatus.PENDING)).thenReturn(List.of(u1));
+
+        List<UserEntity> result = userService.getUsersByStatus(AccountStatus.PENDING);
+
+        assertEquals(1, result.size());
+        assertEquals(AccountStatus.PENDING, result.get(0).getStatus());
+    }
+
+    @Test
+    void shouldThrowWhenApprovingNonexistentUser() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.approveUser(99L));
+    }
+
+    @Test
+    void shouldRegisterUserWithDefaultRoleWhenRoleIsNull() {
+        SignUpDto dto = new SignUpDto();
+        dto.setEmail("no-role@example.com");
+        dto.setPassword("abc");
+        dto.setFirstName("No");
+        dto.setLastName("Role");
+        dto.setPhone("123456789");
+        dto.setRole(null);
+
+        when(userRepository.findByEmail(dto.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(dto.getPassword())).thenReturn("encoded");
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        UserEntity saved = userService.registerNewUser(dto);
+
+        assertEquals(Role.PATIENT, saved.getRole(), "Default role should be PATIENT");
+    }
+
+    @Test
+    void shouldApproveUserWhenExists() {
+        Long id = 5L;
+        UserEntity u = new UserEntity();
+        u.setId(id);
+        u.setStatus(AccountStatus.PENDING);
+        when(userRepository.findById(id)).thenReturn(Optional.of(u));
+
+        userService.approveUser(id);
+
+        assertEquals(AccountStatus.ACTIVE, u.getStatus());
+        verify(userRepository).save(u);
+    }
+
+
+
+    @Test
+    void shouldUpdateUserProfileSuccessfully() {
+        // given
+        String email = "anna@example.com";
+        UserDto dto = new UserDto();
+        dto.setFirstName("Anna");
+        dto.setLastName("Nowak");
+        dto.setPhone("123456789");
+
+        UserEntity existing = new UserEntity();
+        existing.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existing));
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        // when
+        UserEntity result = userService.updateProfile(email, dto);
+
+        // then
+        assertEquals("Anna", result.getFirstName());
+        assertEquals("Nowak", result.getLastName());
+        assertEquals("123456789", result.getPhoneNumber());
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingProfileOfNonexistentUser() {
+        String email = "missing@example.com";
+        UserDto dto = new UserDto();
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class, () -> userService.updateProfile(email, dto));
+    }
+
+
+
+
 }

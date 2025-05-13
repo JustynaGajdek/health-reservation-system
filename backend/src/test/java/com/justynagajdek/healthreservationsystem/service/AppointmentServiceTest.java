@@ -6,6 +6,7 @@ import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.entity.*;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentType;
+import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
@@ -18,6 +19,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -131,4 +133,42 @@ public class AppointmentServiceTest {
         assertThat(saved.getDoctor()).isEqualTo(doctor);
         assertThat(saved.getPatient()).isEqualTo(patient);
     }
+
+    @Test
+    void shouldReturnAppointmentsForDoctor() {
+        // Given
+        UserEntity user = new UserEntity();
+        DoctorEntity doctor = new DoctorEntity();
+        doctor.setId(77L);
+        user.setRole(Role.DOCTOR);
+        user.setDoctor(doctor);
+
+        AppointmentEntity appointment1 = new AppointmentEntity();
+        appointment1.setDoctor(doctor);
+
+        when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(user));
+        when(appointmentRepository.findByDoctor_Id(77L)).thenReturn(List.of(appointment1));
+
+        // When
+        var result = appointmentService.getAppointmentsForCurrentUser();
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDoctor()).isEqualTo(doctor);
+    }
+
+    @Test
+    void shouldThrowWhenUserRoleIsNotSupported() {
+        // Given
+        UserEntity user = new UserEntity();
+        user.setRole(Role.ADMIN);
+        when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(user));
+
+        // Then
+        assertThatThrownBy(() -> appointmentService.getAppointmentsForCurrentUser())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("User is neither a doctor nor a patient.");
+    }
+
+
 }
