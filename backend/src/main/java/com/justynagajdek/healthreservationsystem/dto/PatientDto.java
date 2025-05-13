@@ -13,4 +13,5 @@ public class PatientDto {
     private String pesel;
     private LocalDate dateOfBirth;
     private String address;
+
 }
