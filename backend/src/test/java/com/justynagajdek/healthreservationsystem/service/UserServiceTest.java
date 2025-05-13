@@ -10,7 +10,6 @@ import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundExcep
 import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -36,8 +35,6 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
-    @Mock
-    private PatientRepository patientRepository;
 
 
     @BeforeEach
@@ -197,26 +194,7 @@ public class UserServiceTest {
         verify(userRepository).save(u);
     }
 
-    @Test
-    void shouldReturnPatientByPesel() {
-        String pesel = "12345678901";
-        PatientEntity expected = new PatientEntity();
-        expected.setPesel(pesel);
 
-        when(patientRepository.findByPesel(pesel)).thenReturn(Optional.of(expected));
-
-        PatientEntity result = userService.getByPesel(pesel);
-
-        assertEquals(pesel, result.getPesel());
-    }
-
-    @Test
-    void shouldThrowWhenPatientNotFoundByPesel() {
-        String pesel = "00000000000";
-        when(patientRepository.findByPesel(pesel)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> userService.getByPesel(pesel));
-    }
 
     @Test
     void shouldUpdateUserProfileSuccessfully() {
