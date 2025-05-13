@@ -18,4 +18,7 @@ public class UserDto {
     private String phone;
     private Role role;
     private AccountStatus status;
+
+    public void setPhoneNumber(String number) {
+    }
 }
