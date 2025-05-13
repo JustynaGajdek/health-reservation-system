@@ -1,8 +1,10 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
+import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
+import com.justynagajdek.healthreservationsystem.service.StaffService;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,11 +21,14 @@ public class AdminController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final StaffService staffService;
 
-    public AdminController(UserService userService, UserMapper userMapper) {
+    public AdminController(UserService userService, UserMapper userMapper,
+                           StaffService staffService) {
 
         this.userService = userService;
         this.userMapper = userMapper;
+        this.staffService = staffService;
     }
 
     @GetMapping("/dashboard")
@@ -62,6 +67,20 @@ public class AdminController {
     public void approveUser(@PathVariable Long id) {
         log.info("Approving user with id={}", id);
         userService.approveUser(id);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/staff/registerDoctor")
+    public void registerDoctor(@RequestBody SignUpDto dto) {
+        log.info("Registering doctor with email={}", dto.getEmail());
+        staffService.registerDoctor(dto);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/staff/registerReceptionist")
+    public void registerReceptionist(@RequestBody SignUpDto dto) {
+        log.info("Registering receptionist with email={}", dto.getEmail());
+        staffService.registerReceptionist(dto);
     }
 
 }

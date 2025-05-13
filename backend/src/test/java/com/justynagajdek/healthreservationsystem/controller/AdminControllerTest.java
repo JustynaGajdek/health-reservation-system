@@ -4,10 +4,12 @@ import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
+import com.justynagajdek.healthreservationsystem.service.StaffService;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import com.justynagajdek.healthreservationsystem.jwt.JwtAuthenticationFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -44,6 +46,10 @@ class AdminControllerTest {
 
     @MockBean
     private UserMapper userMapper;
+
+    @MockBean
+    private StaffService staffService;
+
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -116,4 +122,54 @@ class AdminControllerTest {
                         "Admin Dashboard - Users, Doctors, Patients, Receptionists"
                 ));
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /admin/staff/registerDoctor should return 201 Created")
+    void shouldRegisterDoctor() throws Exception {
+        String json = """
+        {
+            "firstName": "John",
+            "lastName": "Doe",
+            "email": "john@example.com",
+            "phone": "123456789",
+            "password": "secure123",
+            "role": "DOCTOR"
+        }
+        """;
+
+        doNothing().when(staffService).registerDoctor(Mockito.any());
+
+        mockMvc.perform(post("/admin/staff/registerDoctor")
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /admin/staff/registerReceptionist should return 201 Created")
+    void shouldRegisterReceptionist() throws Exception {
+        String json = """
+        {
+            "firstName": "Jane",
+            "lastName": "Smith",
+            "email": "jane@example.com",
+            "phone": "987654321",
+            "password": "recep123",
+            "role": "RECEPTIONIST"
+        }
+        """;
+
+        doNothing().when(staffService).registerReceptionist(Mockito.any());
+
+        mockMvc.perform(post("/admin/staff/registerReceptionist")
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isCreated());
+    }
+
+
 }
