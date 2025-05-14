@@ -2,11 +2,13 @@ package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
+import com.justynagajdek.healthreservationsystem.entity.NurseEntity;
 import com.justynagajdek.healthreservationsystem.entity.ReceptionistEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
+import com.justynagajdek.healthreservationsystem.repository.NurseRepository;
 import com.justynagajdek.healthreservationsystem.repository.ReceptionistRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,15 +21,19 @@ public class StaffService {
     private final DoctorRepository doctorRepository;
     private final ReceptionistRepository receptionistRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NurseRepository nurseRepository;
+
 
     public StaffService(UserRepository userRepository,
                         DoctorRepository doctorRepository,
                         ReceptionistRepository receptionistRepository,
-                        PasswordEncoder passwordEncoder) {
+                        PasswordEncoder passwordEncoder,
+                        NurseRepository nurseRepository) {
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.receptionistRepository = receptionistRepository;
         this.passwordEncoder = passwordEncoder;
+        this.nurseRepository = nurseRepository;
     }
 
     public void registerDoctor(SignUpDto dto) {
@@ -73,4 +79,26 @@ public class StaffService {
         user.setRole(role);
         return user;
     }
+
+    public void registerNurse(SignUpDto dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        UserEntity user = new UserEntity();
+        user.setEmail(dto.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhoneNumber(dto.getPhone());
+        user.setRole(Role.NURSE);
+        user.setStatus(AccountStatus.ACTIVE);
+
+        UserEntity savedUser = userRepository.save(user);
+
+        NurseEntity nurse = new NurseEntity();
+        nurse.setUser(savedUser);
+        nurseRepository.save(nurse);
+    }
+
 }

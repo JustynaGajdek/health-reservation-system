@@ -6,6 +6,7 @@ import com.justynagajdek.healthreservationsystem.entity.ReceptionistEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
+import com.justynagajdek.healthreservationsystem.repository.NurseRepository;
 import com.justynagajdek.healthreservationsystem.repository.ReceptionistRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,8 @@ class StaffServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private NurseRepository nurseRepository;
 
     @InjectMocks
     private StaffService staffService;
@@ -118,4 +121,25 @@ class StaffServiceTest {
         verify(userRepository, never()).save(any());
         verify(doctorRepository, never()).save(any());
     }
+
+    @Test
+    void shouldRegisterNurseSuccessfully() {
+        SignUpDto dto = new SignUpDto();
+        dto.setEmail("nurse@example.com");
+        dto.setPassword("nurse123");
+        dto.setFirstName("Anna");
+        dto.setLastName("Nowak");
+        dto.setPhone("123456789");
+        dto.setRole("NURSE");
+
+        when(userRepository.findByEmail(dto.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(dto.getPassword())).thenReturn("encoded-password");
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        staffService.registerNurse(dto);
+
+        verify(userRepository).save(any());
+        verify(nurseRepository).save(any());
+    }
+
 }

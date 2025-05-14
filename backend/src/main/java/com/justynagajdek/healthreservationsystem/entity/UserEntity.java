@@ -49,6 +49,10 @@ public class UserEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private ReceptionistEntity receptionist;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private NurseEntity nurse;
+
+
     public UserEntity() {
     }
 
