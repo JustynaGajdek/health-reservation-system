@@ -83,4 +83,12 @@ public class AdminController {
         staffService.registerReceptionist(dto);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/staff/registerNurse")
+    public void registerNurse(@RequestBody SignUpDto dto) {
+        log.info("Registering nurse with email={}", dto.getEmail());
+        staffService.registerNurse(dto);
+    }
+
+
 }

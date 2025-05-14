@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -138,7 +139,7 @@ class AdminControllerTest {
         }
         """;
 
-        doNothing().when(staffService).registerDoctor(Mockito.any());
+        doNothing().when(staffService).registerDoctor(any());
 
         mockMvc.perform(post("/admin/staff/registerDoctor")
                         .with(csrf())
@@ -162,7 +163,7 @@ class AdminControllerTest {
         }
         """;
 
-        doNothing().when(staffService).registerReceptionist(Mockito.any());
+        doNothing().when(staffService).registerReceptionist(any());
 
         mockMvc.perform(post("/admin/staff/registerReceptionist")
                         .with(csrf())
@@ -170,6 +171,31 @@ class AdminControllerTest {
                         .content(json))
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /admin/staff/registerNurse should return 201 Created")
+    void shouldRegisterNurse() throws Exception {
+        String json = """
+        {
+          "firstName": "Anna",
+          "lastName": "Nowak",
+          "email": "nurse@example.com",
+          "phone": "123456789",
+          "password": "nurse123",
+          "role": "NURSE"
+        }
+        """;
+
+        doNothing().when(staffService).registerNurse(any());
+
+        mockMvc.perform(post("/admin/staff/registerNurse")
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isCreated());
+    }
+
 
 
 }
