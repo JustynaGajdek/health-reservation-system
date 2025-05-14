@@ -2,15 +2,21 @@ package com.justynagajdek.healthreservationsystem.service;
 
 import com.justynagajdek.healthreservationsystem.dto.VaccinationDto;
 import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
+import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.entity.VaccinationEntity;
 import com.justynagajdek.healthreservationsystem.mapper.VaccinationMapper;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
+import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.VaccinationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -26,6 +32,9 @@ class VaccinationServiceTest {
 
     @Mock
     private VaccinationMapper vaccinationMapper;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private VaccinationService vaccinationService;
@@ -70,4 +79,35 @@ class VaccinationServiceTest {
         assertEquals("Patient not found", ex.getMessage());
         verify(vaccinationRepository, never()).save(any());
     }
+
+    @Test
+    void shouldReturnVaccinationsForCurrentPatient() {
+        String email = "patient@example.com";
+
+        var authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(email);
+        var securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        PatientEntity patient = new PatientEntity();
+        patient.setId(42L);
+
+        UserEntity user = new UserEntity();
+        user.setEmail(email);
+        user.setPatient(patient);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        VaccinationEntity v1 = new VaccinationEntity();
+        VaccinationEntity v2 = new VaccinationEntity();
+        when(vaccinationRepository.findByPatientId(42L)).thenReturn(List.of(v1, v2));
+
+        when(vaccinationMapper.toDto(any())).thenReturn(new VaccinationDto());
+
+        List<VaccinationDto> result = vaccinationService.getVaccinationsForCurrentPatient();
+
+        assertEquals(2, result.size());
+    }
+
 }
