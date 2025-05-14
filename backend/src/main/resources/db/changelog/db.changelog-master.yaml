@@ -3,3 +3,6 @@ databaseChangeLog:
       file: db/changelog/changelog-001-create-tables.yaml
   - include:
       file: db/changelog/changelog-002-insert-data.yaml
+  - include:
+      file: db/changelog/changelog-003-add-nurses-table.yaml
+

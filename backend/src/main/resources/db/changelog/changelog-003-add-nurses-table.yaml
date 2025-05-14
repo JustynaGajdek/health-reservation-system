@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003
+      author: justyna
+      changes:
+        - createTable:
+            tableName: nurses
+            ifNotExists: true
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    unique: true
+                    foreignKeyName: fk_nurse_user
+                    references: users(id)
