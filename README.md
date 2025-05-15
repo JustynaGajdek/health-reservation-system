@@ -13,10 +13,12 @@ A full-stack medical appointment booking system that allows patients to register
 * Docker Compose – backend & database
 
 **Frontend**
-* React 18
-* React Router
-* Axios
-* Bootstrap (styling)
+* React 18 (Vite)
+* React Router v6+
+* Context API (auth state)
+* Axios (API layer with token handling)
+* Bootstrap + custom CSS
+* Role-based routing (PrivateRoute)
 
 **Dev & Tools**
 * Maven
@@ -66,9 +68,20 @@ health-reservation-system/
 ├── frontend/ # React frontend
 │ ├── public/
 │ └── src/
-│      ├── HomePage.jsx
-│      ├── LoginForm.jsx
-│      └── ...
+│      ├── pages/
+│      │    ├── HomePage/
+│      │    ├── LoginPage/
+│      │    ├── RegisterPage/
+│      │    └── DashboardPage/
+│      ├── components/
+│      │    └── PrivateRoute.jsx
+│      ├── context/
+│      │    └── AuthContext.jsx
+│      ├── hooks/
+│      │    └── useAuth.js
+│      ├── services/
+│      │    └── api.js, auth.service.js
+│      └── main.jsx, App.jsx
 │
 ├── docs/ # Technical documentation
 │ ├── ARCHITECTURE.md
@@ -213,7 +226,9 @@ Secrets and credentials are loaded from `.env` or system environment variables (
 
 ## 📌 Status
 ✅ MVP in progress — login, registration, appointment booking complete.
-🔜 Coming soon — patient panel, admin dashboard, email notifications.
+✅ Auth flow implemented (register, login, logout)
+✅ Context-based state and token storage
+✅ Routes protected via PrivateRoute
 
 ## 🧑‍💻 Author
 Justyna Gajdek
