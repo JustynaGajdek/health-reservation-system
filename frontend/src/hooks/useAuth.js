@@ -4,25 +4,40 @@ import { login as loginService } from '../services/auth.service'
 export default function useAuth() {
   const [token, setToken] = useState(() => localStorage.getItem('token'))
   const [user, setUser]   = useState(null)
+  const [loading, setLoading] = useState(!!token)
 
   useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const { data } = await fetchProfile()
+        setUser(data)
+      } catch (error) {
+        console.error('Nie udało się pobrać profilu:', error)
+        logout() 
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (token) {
-      setUser({ /* dane z tokena */ })
+      loadUser()
+    } else {
+      setLoading(false)
     }
   }, [token])
 
-  const login = async creds => {
-    const { data } = await loginService(creds)
-    setToken(data.token)
+  const login = async credentials => {
+    const { data } = await loginService(credentials)
     localStorage.setItem('token', data.token)
-    setUser(data.user)
+    setToken(data.token)
+    setUser(data.user) 
   }
 
   const logout = () => {
-    setToken(null)
     localStorage.removeItem('token')
+    setToken(null)
     setUser(null)
   }
 
-  return { user, token, login, logout }
+  return { user, token, loading, login, logout }
 }
