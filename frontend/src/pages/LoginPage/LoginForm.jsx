@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useAuthContext } from '../../context/AuthContext';
 import './LoginForm.css';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { login } = useAuthContext()
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,21 +16,13 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8080/login', {
-        email,
-        password,
-      });
-
-      const token = response.data.token;
-      localStorage.setItem('jwt', token);
-
-      setEmail('');
-      setPassword('');
-      navigate('/dashboard');
+      await login({ username: email, password }) 
+      navigate('/dashboard')
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      console.error(err)
+      setError('Invalid email or password. Please try again.')
     }
-  };
+  }
 
   return (
     <div className="login-container">
