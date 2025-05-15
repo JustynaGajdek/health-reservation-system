@@ -1,17 +1,10 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5433/health-reservation-system
-    username: postgres
-    password: asd
-    driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: true
-
-  flyway:
-    enabled: false
+  liquibase:
+    enabled: true
 
 app:
   jwtSecret: TestSecretKeyForJWTwhichislongenough!

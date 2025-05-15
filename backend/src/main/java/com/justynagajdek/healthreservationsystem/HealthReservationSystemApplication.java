@@ -4,7 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class HealthReservationSystemApplication {
+public class
+HealthReservationSystemApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HealthReservationSystemApplication.class, args);

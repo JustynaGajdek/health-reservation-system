@@ -2,28 +2,30 @@ package com.justynagajdek.healthreservationsystem.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.justynagajdek.healthreservationsystem.dto.LoginDto;
+import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
-import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
-import org.junit.jupiter.api.*;
+import com.justynagajdek.healthreservationsystem.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@ActiveProfiles("test")
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
+@Transactional
 @AutoConfigureMockMvc
-public class AuthControllerIntegrationTest {
+public class AuthControllerIntegrationTest extends BaseIntegrationTest{
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,12 +58,6 @@ public class AuthControllerIntegrationTest {
         userRepository.save(user);
     }
 
-    @AfterEach
-    void cleanUp() {
-        appointmentRepository.deleteAll();
-        userRepository.findByEmail("john.doe@email.com").ifPresent(userRepository::delete);
-
-    }
 
     @Test
     void shouldReturnJwtTokenWhenCredentialsAreValid() throws Exception {
@@ -86,6 +82,25 @@ public class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRegisterNewUser_WhenSignUpDtoIsValid() throws Exception {
+        SignUpDto dto = new SignUpDto();
+        dto.setEmail("alice@example.com");
+        dto.setPassword("securePass1!");
+        dto.setFirstName("Alice");
+        dto.setLastName("Smith");
+        dto.setRole(String.valueOf(Role.PATIENT));
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("alice@example.com"))
+                .andExpect(jsonPath("$.id").isNumber());
+
+        assertTrue(userRepository.findByEmail("alice@example.com").isPresent());
     }
 
 }
