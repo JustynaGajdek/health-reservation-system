@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage/HomePage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import Dashboard from "./pages/DashboardPage/Dashboard";
 import PrivateRoute from './components/PrivateRoute';
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
 
 function App() {
 
@@ -11,6 +12,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
          path="/dashboard"
