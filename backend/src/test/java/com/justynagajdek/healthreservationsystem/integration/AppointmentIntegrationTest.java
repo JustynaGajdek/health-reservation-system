@@ -74,4 +74,34 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andDo(print());
     }
 
+    @Test
+    @WithMockUser(username = "jan.kowalski@example.com", roles = "PATIENT")
+    void shouldReturnConflictWhenDoubleBooking() throws Exception {
+        // given
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+        String datetime = "2025-05-20T10:00:00";
+
+        AppointmentRequestDto request = new AppointmentRequestDto();
+        request.setDoctorId(doctor.getId());
+        request.setPreferredDateTime(LocalDateTime.parse("2025-05-20T10:00:00"));
+        request.setAppointmentType(AppointmentType.TELECONSULTATION);
+
+        // when: first booking succeeds
+        mockMvc.perform(post("/appointments/request")
+                        .with(user("jan.kowalski@example.com").roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        // then: second booking gets 409 Conflict
+        mockMvc.perform(post("/appointments/request")
+                        .with(user("jan.kowalski@example.com").roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andDo(print());
+    }
+
+
 }

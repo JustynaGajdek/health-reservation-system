@@ -11,8 +11,10 @@ import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -42,6 +44,11 @@ public class AppointmentService {
 
         DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (appointmentRepository.existsByAppointmentDateAndDoctorId(dto.getPreferredDateTime(), doctor.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment already exists at this time");
+        }
+
 
         AppointmentEntity appointment = new AppointmentEntity();
         appointment.setPatient(user.getPatient());

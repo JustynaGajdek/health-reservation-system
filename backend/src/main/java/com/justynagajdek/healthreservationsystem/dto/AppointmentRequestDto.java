@@ -1,9 +1,11 @@
 package com.justynagajdek.healthreservationsystem.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentType;
 import java.time.LocalDateTime;
 
 public class AppointmentRequestDto {
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime preferredDateTime;
     private AppointmentType appointmentType;
     private Long doctorId;
