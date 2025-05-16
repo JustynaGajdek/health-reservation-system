@@ -21,4 +21,8 @@ public class AppointmentCreationDto {
 
     public AppointmentType getAppointmentType() { return appointmentType; }
     public void setAppointmentType(AppointmentType appointmentType) { this.appointmentType = appointmentType; }
+
+    public void setAppointmentDateTime(String s) {
+
+    }
 }

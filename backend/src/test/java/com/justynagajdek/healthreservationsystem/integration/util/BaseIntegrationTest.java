@@ -1,4 +1,5 @@
-package com.justynagajdek.healthreservationsystem.integration;
+package com.justynagajdek.healthreservationsystem.integration.util;
+
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;

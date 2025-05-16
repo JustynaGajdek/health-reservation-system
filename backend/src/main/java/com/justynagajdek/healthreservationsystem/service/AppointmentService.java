@@ -30,7 +30,7 @@ public class AppointmentService {
         this.doctorRepository = doctorRepository;
     }
 
-    public void createPendingAppointment(AppointmentRequestDto dto) {
+    public AppointmentEntity createPendingAppointment(AppointmentRequestDto dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         UserEntity user = userRepository.findByEmail(email)
@@ -40,14 +40,18 @@ public class AppointmentService {
             throw new RuntimeException("Only patients can request appointments.");
         }
 
+        DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
         AppointmentEntity appointment = new AppointmentEntity();
         appointment.setPatient(user.getPatient());
+        appointment.setDoctor(doctor);
         appointment.setAppointmentDate(dto.getPreferredDateTime());
         appointment.setAppointmentType(dto.getAppointmentType());
         appointment.setStatus(AppointmentStatus.PENDING);
 
 
-        appointmentRepository.save(appointment);
+        return appointmentRepository.save(appointment);
     }
 
     public void assignDoctorAndConfirm(Long appointmentId, AssignAppointmentDto dto) {

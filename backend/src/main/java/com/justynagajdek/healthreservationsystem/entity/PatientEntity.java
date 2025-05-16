@@ -39,5 +39,10 @@ public class PatientEntity {
     @OneToMany(mappedBy = "patient")
     private List<AppointmentEntity> appointments;
 
+    public void setFirstName(String jan) {
+    }
+
+    public void setLastName(String kowalski) {
+    }
 }
 
