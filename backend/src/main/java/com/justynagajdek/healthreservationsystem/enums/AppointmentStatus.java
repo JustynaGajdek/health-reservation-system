@@ -2,5 +2,5 @@ package com.justynagajdek.healthreservationsystem.enums;
 
 public enum AppointmentStatus {
 
-    PENDING, CONFIRMED, CANCELLED
+    PENDING, CONFIRMED, CANCELED, CANCELLED
 }

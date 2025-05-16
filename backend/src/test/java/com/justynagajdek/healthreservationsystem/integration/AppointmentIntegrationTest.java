@@ -1,21 +1,14 @@
 package com.justynagajdek.healthreservationsystem.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
-import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
-import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
-import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
+import com.justynagajdek.healthreservationsystem.entity.*;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentType;
+import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.integration.util.BaseIntegrationTest;
 import com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory;
-import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
-import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
-import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
-import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-
-
+import com.justynagajdek.healthreservationsystem.repository.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,14 +20,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory.createPatientWithUser;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory.createUser;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+
 
 
 @Testcontainers
@@ -60,6 +58,8 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private AppointmentRepository appointmentRepo;
+    @Autowired
+    private ReceptionistRepository receptionistRepo;
 
 
     @Test
@@ -157,10 +157,85 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andDo(print());
     }
 
+    @Test
+    @WithMockUser(username = "doctor@example.com", roles = "DOCTOR")
+    void shouldReturnAppointmentsForDoctor() throws Exception {
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser("doctor@example.com", userRepo, doctorRepo);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser("patient@example.com", "12345678901", userRepo, patientRepo);
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(1));
+        appointment.setAppointmentType(AppointmentType.STATIONARY);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointmentRepo.save(appointment);
+
+        mockMvc.perform(get("/appointments/mine")
+                        .with(user("doctor@example.com").roles("DOCTOR"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andDo(print());
+    }
+
+    @Test
+    @WithMockUser(username = "reception@example.com", roles = "RECEPTIONIST")
+    void shouldReturnForbiddenForUnauthorizedRole() throws Exception {
+        // given
+        createUser("reception@example.com", Role.RECEPTIONIST, userRepo);
+
+        // when + then
+        mockMvc.perform(get("/appointments/mine")
+                        .with(user("reception@example.com").roles("RECEPTIONIST"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andDo(print());
+    }
 
 
+    @Test
+    void shouldReturnUnauthorizedIfNotLoggedIn() throws Exception {
+        mockMvc.perform(get("/appointments/mine")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andDo(print());
+    }
+
+    @Test
+    @WithMockUser(username = "reception@example.com", roles = "RECEPTIONIST")
+    void shouldCancelAppointmentAsReceptionist() throws Exception {
+        // given
+        UserEntity receptionistUser = TestEntityFactory.createUser("reception@example.com", Role.RECEPTIONIST, userRepo);
+        ReceptionistEntity receptionist = new ReceptionistEntity();
+        receptionist.setUser(receptionistUser);
+        receptionistRepo.save(receptionist);
+
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser("doc@example.com", userRepo, doctorRepo);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser("patient@example.com", "12345678909", userRepo, patientRepo);
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(1));
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setAppointmentType(AppointmentType.STATIONARY);
+        appointmentRepo.save(appointment);
+
+        // when + then
+        mockMvc.perform(delete("/reception/appointments/" + appointment.getId())
+                        .with(user("reception@example.com").roles("RECEPTIONIST"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andDo(print());
 
 
+        // verify
+        Optional<AppointmentEntity> maybeAppointment = appointmentRepo.findById(appointment.getId());
+        assertThat(maybeAppointment).isPresent();
+        assertThat(maybeAppointment.get().getStatus()).isEqualTo(AppointmentStatus.CANCELED);
 
+    }
+    
 
 }

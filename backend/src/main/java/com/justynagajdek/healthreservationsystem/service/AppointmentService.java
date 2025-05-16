@@ -11,8 +11,12 @@ import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -98,18 +102,28 @@ public class AppointmentService {
     }
 
     public List<AppointmentEntity> getAppointmentsForCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByEmail(email).orElseThrow();
-
-        if (user.getPatient() != null) {
-            return appointmentRepository.findByPatient_Id(user.getPatient().getId());
-        } else if (user.getDoctor() != null) {
-            return appointmentRepository.findByDoctor_Id(user.getDoctor().getId());
-        } else {
-            throw new RuntimeException("User is neither a doctor nor a patient.");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User is not authenticated.");
         }
+
+        String email = authentication.getName();
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        return switch (user.getRole()) {
+            case PATIENT -> appointmentRepository.findAllByPatient_User(user);
+            case DOCTOR -> appointmentRepository.findAllByDoctor_User(user);
+            default -> throw new AccessDeniedException("Role " + user.getRole() + " not allowed to view appointments.");
+        };
     }
 
+    public void cancelAppointment(Long id) {
+        AppointmentEntity appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + id));
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointmentRepository.save(appointment);
+    }
 
 
 

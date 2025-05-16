@@ -103,5 +103,17 @@ public class TestEntityFactory {
         return doctorRepo.save(doctor);
     }
 
+    public static UserEntity createUser(String email, Role role, UserRepository userRepo) {
+        UserEntity user = new UserEntity();
+        user.setEmail(email);
+        user.setRole(role);
+        user.setPasswordHash("test"); // dummy
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setStatus(AccountStatus.ACTIVE);
+        return userRepo.save(user);
+    }
+
+
 
 }
