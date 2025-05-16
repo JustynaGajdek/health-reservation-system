@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import "./App.css";
-import HomePage from "./HomePage";
-import LoginForm from "./LoginForm";
-import Dashboard from "./Dashboard";
+import HomePage from "./pages/HomePage/HomePage";
+import LoginPage from "./pages/LoginPage/LoginPage";
+import Dashboard from "./pages/DashboardPage/Dashboard";
+import PrivateRoute from './components/PrivateRoute';
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
 
 function App() {
 
@@ -10,8 +12,16 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+         path="/dashboard"
+          element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
       </Routes>
     </Router>
   );

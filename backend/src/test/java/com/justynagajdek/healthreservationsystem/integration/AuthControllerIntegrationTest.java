@@ -19,8 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 
 @Transactional
@@ -93,12 +93,11 @@ public class AuthControllerIntegrationTest extends BaseIntegrationTest{
         dto.setLastName("Smith");
         dto.setRole(String.valueOf(Role.PATIENT));
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("alice@example.com"))
-                .andExpect(jsonPath("$.id").isNumber());
+                .andExpect(content().string("Account created. Waiting for admin approval."));
 
         assertTrue(userRepository.findByEmail("alice@example.com").isPresent());
     }
