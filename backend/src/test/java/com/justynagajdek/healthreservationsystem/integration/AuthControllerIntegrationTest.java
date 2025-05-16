@@ -93,7 +93,7 @@ public class AuthControllerIntegrationTest extends BaseIntegrationTest{
         dto.setLastName("Smith");
         dto.setRole(String.valueOf(Role.PATIENT));
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
