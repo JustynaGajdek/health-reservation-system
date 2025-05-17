@@ -297,5 +297,12 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         assertThat(appointmentRepo.findById(appointment.getId()).get().getStatus())
                 .isEqualTo(AppointmentStatus.CANCEL_REQUESTED);
     }
+    @Test
+    void shouldReturnNotFoundWhenCancelingNonExistentAppointment() throws Exception {
+        mockMvc.perform(delete("/appointments/999999")
+                        .with(user("patient@example.com").roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 
 }
