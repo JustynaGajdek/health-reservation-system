@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -76,7 +77,8 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     void shouldCreateAppointmentWhenSlotIsFree() throws Exception {
         // given: a patient and a doctor exist in the database
         String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
-        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        String pesel = UUID.randomUUID().toString().substring(0, 11);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
         AppointmentRequestDto request = new AppointmentRequestDto();
@@ -99,8 +101,9 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     void shouldReturnConflictWhenDoubleBooking() throws Exception {
         // given
         String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
+        String pesel = UUID.randomUUID().toString().substring(0, 11);
 
-        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
         AppointmentRequestDto request = new AppointmentRequestDto();
@@ -146,7 +149,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         a2.setStatus(AppointmentStatus.PENDING);
         appointmentRepo.save(a2);
 
-        PatientEntity patient2 = TestEntityFactory.createPatientWithUser("ania@example.com", "12345678902", userRepo, patientRepo);
+        PatientEntity patient2 = TestEntityFactory.createPatientWithUser("ania@example.com", "12345678936", userRepo, patientRepo);
 
         AppointmentEntity a3 = new AppointmentEntity();
         a3.setAppointmentDate(LocalDateTime.of(2025, 5, 22, 12, 0));
@@ -171,7 +174,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     void shouldReturnAppointmentsForDoctor() throws Exception {
         String email = "doctor+" + UUID.randomUUID() + "@example.com";
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(email, userRepo, doctorRepo);
-        PatientEntity patient = TestEntityFactory.createPatientWithUser("patient@example.com", "12345678901", userRepo, patientRepo);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser("patient@example.com", "12345678958", userRepo, patientRepo);
 
         AppointmentEntity appointment = new AppointmentEntity();
         appointment.setDoctor(doctor);
@@ -261,7 +264,9 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     void shouldReturnBadRequestWhenRequestMissingDoctorOrDate() throws Exception {
         // given
         String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
-        TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        String pesel = UUID.randomUUID().toString().substring(0, 11);
+
+        TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
 
         AppointmentRequestDto invalidRequest = new AppointmentRequestDto();
         invalidRequest.setAppointmentType(AppointmentType.STATIONARY);
@@ -278,7 +283,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     @Test
     void shouldAllowPatientToCancelOwnAppointment() throws Exception {
         String email = "patient+" + UUID.randomUUID() + "@example.com";
-        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678971", userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
         AppointmentEntity appointment = new AppointmentEntity();
@@ -308,7 +313,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     @Test
     void shouldRejectAppointmentInThePast() throws Exception {
         String email = "jan+" + UUID.randomUUID() + "@example.com";
-        TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        TestEntityFactory.createPatientWithUser(email, "12345678981", userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
         AppointmentRequestDto request = new AppointmentRequestDto();
@@ -321,6 +326,51 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectCancelRequestForOthersAppointment() throws Exception {
+        // given
+        PatientEntity owner = TestEntityFactory.createPatientWithUser("owner@example.com", "12345678999", userRepo, patientRepo);
+        PatientEntity attacker = TestEntityFactory.createPatientWithUser("attacker@example.com", "98765432109", userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(owner);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(2));
+        appointment.setAppointmentType(AppointmentType.TELECONSULTATION);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointmentRepo.save(appointment);
+
+        // when + then
+        mockMvc.perform(patch("/appointments/" + appointment.getId() + "/cancel-request")
+                        .with(user("attacker@example.com").roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectCancelRequestIfNotConfirmed() throws Exception {
+        String email = "jan+" + UUID.randomUUID() + "@example.com";
+        String pesel = UUID.randomUUID().toString().substring(0, 11);
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        for (AppointmentStatus status : List.of(AppointmentStatus.PENDING, AppointmentStatus.CANCEL_REQUESTED)) {
+            AppointmentEntity appointment = new AppointmentEntity();
+            appointment.setDoctor(doctor);
+            appointment.setPatient(patient);
+            appointment.setAppointmentDate(LocalDateTime.now().plusDays(1));
+            appointment.setAppointmentType(AppointmentType.STATIONARY);
+            appointment.setStatus(status);
+            appointmentRepo.save(appointment);
+
+            mockMvc.perform(patch("/appointments/" + appointment.getId() + "/cancel-request")
+                            .with(user(email).roles("PATIENT"))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
 }

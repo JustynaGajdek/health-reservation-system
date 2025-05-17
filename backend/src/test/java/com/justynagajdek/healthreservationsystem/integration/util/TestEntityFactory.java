@@ -55,7 +55,7 @@ public class TestEntityFactory {
 
         PatientEntity patient = new PatientEntity();
         patient.setUser(user);
-        patient.setPesel("12345678232");
+        patient.setPesel(pesel);;
         patient.setAddress("Test Street 1");
         patient.setDateOfBirth(LocalDate.of(1990, 1, 1));
 
