@@ -260,6 +260,30 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andDo(print());
     }
 
+    @Test
+    void shouldAllowPatientToCancelOwnAppointment() throws Exception {
+        String email = "patient+" + UUID.randomUUID() + "@example.com";
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(1));
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setAppointmentType(AppointmentType.STATIONARY);
+        appointmentRepo.save(appointment);
+
+        mockMvc.perform(delete("/appointments/" + appointment.getId())
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        assertThat(appointmentRepo.findById(appointment.getId()).get().getStatus())
+                .isEqualTo(AppointmentStatus.CANCELED);
+    }
+
+
 
 
 }

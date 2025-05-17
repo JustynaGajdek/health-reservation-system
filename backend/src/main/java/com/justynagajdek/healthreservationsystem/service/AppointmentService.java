@@ -125,6 +125,26 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
+    public void requestAppointmentCancellation(Long appointmentId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        UserEntity currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+
+        if (currentUser.getPatient() == null || !appointment.getPatient().getId().equals(currentUser.getPatient().getId())) {
+            throw new AccessDeniedException("You are not authorized to request cancellation for this appointment.");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only confirmed appointments can be cancellation-requested.");
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCEL_REQUESTED);
+        appointmentRepository.save(appointment);
+    }
 
 
 }

@@ -37,4 +37,13 @@ public class AppointmentController {
         return appointmentMapper.toDtoList(appointments);
     }
 
+    @PreAuthorize("hasRole('PATIENT')")
+    @PatchMapping("/{id}/cancel-request")
+    public ResponseEntity<Void> requestCancellation(@PathVariable Long id) {
+        appointmentService.requestAppointmentCancellation(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 }
