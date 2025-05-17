@@ -1,16 +1,18 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
 import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
-import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
-import com.justynagajdek.healthreservationsystem.entity.*;
+import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
+import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
+import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentType;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

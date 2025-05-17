@@ -444,4 +444,59 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    void shouldRejectAppointmentRequestWithInvalidDateFormat() throws Exception {
+        String email = "patient+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createPatientWithUser(email, "90111111111", userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        String invalidJson = """
+        {
+          "doctorId": %d,
+          "preferredDateTime": "2025-05-20 10:00",
+          "appointmentType": "STATIONARY"
+        }
+        """.formatted(doctor.getId());
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    void shouldRejectCancelRequestFromDoctorOrReceptionist() throws Exception {
+        // given
+        String emailDoctor = "doc+" + UUID.randomUUID() + "@example.com";
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(emailDoctor, userRepo, doctorRepo);
+
+        String emailReceptionist = "reception+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createReceptionistWithUser(emailReceptionist, userRepo);
+
+        PatientEntity patient = TestEntityFactory.createPatientWithUser("patient+" + UUID.randomUUID() + "@example.com", "99010111111", userRepo, patientRepo);
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setAppointmentType(AppointmentType.STATIONARY);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(2));
+        appointmentRepo.save(appointment);
+
+        // when + then: doctor
+        mockMvc.perform(patch("/appointments/" + appointment.getId() + "/cancel-request")
+                        .with(user(emailDoctor).roles("DOCTOR"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+
+        // and: receptionist
+        mockMvc.perform(patch("/appointments/" + appointment.getId() + "/cancel-request")
+                        .with(user(emailReceptionist).roles("RECEPTIONIST"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+
+
 }
