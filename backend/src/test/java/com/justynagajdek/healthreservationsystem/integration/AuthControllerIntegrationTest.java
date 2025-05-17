@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.dto.LoginDto;
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.Role;
+import com.justynagajdek.healthreservationsystem.integration.util.BaseIntegrationTest;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Transactional
 @AutoConfigureMockMvc
-public class AuthControllerIntegrationTest extends BaseIntegrationTest{
+public class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

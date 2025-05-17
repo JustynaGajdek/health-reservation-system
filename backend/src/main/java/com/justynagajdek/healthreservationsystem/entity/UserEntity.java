@@ -149,5 +149,10 @@ public class UserEntity {
     }
 
 
+    public void setUsername(String mail) {
+    }
+
+    public void setPassword(String pass) {
+    }
 }
 

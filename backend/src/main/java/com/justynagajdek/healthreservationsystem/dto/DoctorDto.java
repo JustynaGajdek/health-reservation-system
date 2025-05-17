@@ -2,6 +2,8 @@ package com.justynagajdek.healthreservationsystem.dto;
 
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class DoctorDto {
     private Long id;
@@ -9,6 +11,6 @@ public class DoctorDto {
     private String email;
     private String specialization;
     private String officeNumber;
-    private String workingHours;
+    private Map<String, String> workingHours;
 
 }

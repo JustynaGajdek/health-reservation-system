@@ -5,6 +5,8 @@ import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.mapper.AppointmentMapper;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +25,9 @@ public class AppointmentController {
         this.appointmentMapper = appointmentMapper;
     }
     @PostMapping("/request")
-    public ResponseEntity<String> requestAppointment(@RequestBody AppointmentRequestDto dto) {
-        appointmentService.createPendingAppointment(dto);
-        return ResponseEntity.ok("Appointment request submitted and pending assignment.");
+    public ResponseEntity<AppointmentDto> requestAppointment(@Valid @RequestBody AppointmentRequestDto dto) {
+        AppointmentEntity saved = appointmentService.createPendingAppointment(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentMapper.toDto(saved));
     }
 
     @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR')")
@@ -34,5 +36,14 @@ public class AppointmentController {
         List<AppointmentEntity> appointments = appointmentService.getAppointmentsForCurrentUser();
         return appointmentMapper.toDtoList(appointments);
     }
+
+    @PreAuthorize("hasRole('PATIENT')")
+    @PatchMapping("/{id}/cancel-request")
+    public ResponseEntity<Void> requestCancellation(@PathVariable Long id) {
+        appointmentService.requestAppointmentCancellation(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 }

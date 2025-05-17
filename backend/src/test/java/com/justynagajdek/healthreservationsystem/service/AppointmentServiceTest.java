@@ -1,16 +1,18 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
 import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
-import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
-import com.justynagajdek.healthreservationsystem.entity.*;
+import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
+import com.justynagajdek.healthreservationsystem.entity.DoctorEntity;
+import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
+import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.enums.AppointmentType;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -54,6 +56,11 @@ public class AppointmentServiceTest {
         AppointmentRequestDto dto = new AppointmentRequestDto();
         dto.setPreferredDateTime(LocalDateTime.of(2025, 6, 1, 14, 0));
         dto.setAppointmentType(AppointmentType.STATIONARY);
+        dto.setDoctorId(1L);
+
+        DoctorEntity doctor = new DoctorEntity();
+        doctor.setId(1L);
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(doctor));
 
         UserEntity mockUser = new UserEntity();
         PatientEntity patient = new PatientEntity();
@@ -68,6 +75,7 @@ public class AppointmentServiceTest {
 
         AppointmentEntity saved = captor.getValue();
         assertThat(saved.getPatient()).isEqualTo(patient);
+        assertThat(saved.getDoctor()).isEqualTo(doctor);
         assertThat(saved.getStatus()).isEqualTo(AppointmentStatus.PENDING);
     }
 
@@ -136,8 +144,16 @@ public class AppointmentServiceTest {
 
     @Test
     void shouldReturnAppointmentsForDoctor() {
-        // Given
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("doctor@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
         UserEntity user = new UserEntity();
+        user.setEmail("doctor@example.com");
         DoctorEntity doctor = new DoctorEntity();
         doctor.setId(77L);
         user.setRole(Role.DOCTOR);
@@ -146,8 +162,9 @@ public class AppointmentServiceTest {
         AppointmentEntity appointment1 = new AppointmentEntity();
         appointment1.setDoctor(doctor);
 
-        when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(user));
-        when(appointmentRepository.findByDoctor_Id(77L)).thenReturn(List.of(appointment1));
+        when(userRepository.findByEmail("doctor@example.com")).thenReturn(Optional.of(user));
+
+        when(appointmentRepository.findAllByDoctor_User(user)).thenReturn(List.of(appointment1));
 
         // When
         var result = appointmentService.getAppointmentsForCurrentUser();
@@ -159,15 +176,22 @@ public class AppointmentServiceTest {
 
     @Test
     void shouldThrowWhenUserRoleIsNotSupported() {
-        // Given
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("admin@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
         UserEntity user = new UserEntity();
+        user.setEmail("admin@example.com");
         user.setRole(Role.ADMIN);
-        when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(user));
 
         // Then
         assertThatThrownBy(() -> appointmentService.getAppointmentsForCurrentUser())
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("User is neither a doctor nor a patient.");
+                .hasMessageContaining("Role ADMIN not allowed");
     }
 
 

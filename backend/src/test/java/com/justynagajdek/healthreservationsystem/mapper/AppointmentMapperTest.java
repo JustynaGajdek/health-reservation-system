@@ -70,7 +70,7 @@ class AppointmentMapperTest {
         AppointmentEntity a2 = new AppointmentEntity();
         a2.setId(2L);
         a2.setAppointmentType(AppointmentType.TELECONSULTATION);
-        a2.setStatus(AppointmentStatus.CANCELLED);
+        a2.setStatus(AppointmentStatus.CANCEL_REQUESTED);
         a2.setAppointmentDate(LocalDateTime.now().plusDays(1));
 
         List<AppointmentDto> dtos = appointmentMapper.toDtoList(List.of(a1, a2));

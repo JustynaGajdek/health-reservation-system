@@ -45,5 +45,12 @@ public class ReceptionistController {
         return ResponseEntity.ok("Appointment created and confirmed.");
     }
 
+    @DeleteMapping("/appointments/{id}")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable Long id) {
+        appointmentService.cancelAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 }

@@ -11,9 +11,16 @@ import com.justynagajdek.healthreservationsystem.enums.AppointmentStatus;
 import com.justynagajdek.healthreservationsystem.repository.AppointmentRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.DoctorRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -30,24 +37,39 @@ public class AppointmentService {
         this.doctorRepository = doctorRepository;
     }
 
-    public void createPendingAppointment(AppointmentRequestDto dto) {
+    public AppointmentEntity createPendingAppointment(AppointmentRequestDto dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getPatient() == null) {
-            throw new RuntimeException("Only patients can request appointments.");
+            throw new AccessDeniedException("Only patients can request appointments.");
+        }
+
+        if (dto.getPreferredDateTime().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot book an appointment in the past.");
+        }
+
+        DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (appointmentRepository.existsByAppointmentDateAndDoctorId(dto.getPreferredDateTime(), doctor.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment already exists at this time");
+        }
+        if (appointmentRepository.existsByAppointmentDateAndPatientId(dto.getPreferredDateTime(), user.getPatient().getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You already have an appointment at this time");
         }
 
         AppointmentEntity appointment = new AppointmentEntity();
         appointment.setPatient(user.getPatient());
+        appointment.setDoctor(doctor);
         appointment.setAppointmentDate(dto.getPreferredDateTime());
         appointment.setAppointmentType(dto.getAppointmentType());
         appointment.setStatus(AppointmentStatus.PENDING);
 
 
-        appointmentRepository.save(appointment);
+        return appointmentRepository.save(appointment);
     }
 
     public void assignDoctorAndConfirm(Long appointmentId, AssignAppointmentDto dto) {
@@ -87,19 +109,49 @@ public class AppointmentService {
     }
 
     public List<AppointmentEntity> getAppointmentsForCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByEmail(email).orElseThrow();
-
-        if (user.getPatient() != null) {
-            return appointmentRepository.findByPatient_Id(user.getPatient().getId());
-        } else if (user.getDoctor() != null) {
-            return appointmentRepository.findByDoctor_Id(user.getDoctor().getId());
-        } else {
-            throw new RuntimeException("User is neither a doctor nor a patient.");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User is not authenticated.");
         }
+
+        String email = authentication.getName();
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        return switch (user.getRole()) {
+            case PATIENT -> appointmentRepository.findAllByPatient_User(user);
+            case DOCTOR -> appointmentRepository.findAllByDoctor_User(user);
+            default -> throw new AccessDeniedException("Role " + user.getRole() + " not allowed to view appointments.");
+        };
     }
 
+    public void cancelAppointment(Long id) {
+        AppointmentEntity appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + id));
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointmentRepository.save(appointment);
+    }
 
+    public void requestAppointmentCancellation(Long appointmentId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        UserEntity currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+
+        if (currentUser.getPatient() == null || !appointment.getPatient().getId().equals(currentUser.getPatient().getId())) {
+            throw new AccessDeniedException("You are not authorized to request cancellation for this appointment.");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only confirmed appointments can be cancellation-requested.");
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCEL_REQUESTED);
+        appointmentRepository.save(appointment);
+    }
 
 
 }
