@@ -305,4 +305,22 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void shouldRejectAppointmentInThePast() throws Exception {
+        String email = "jan+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        AppointmentRequestDto request = new AppointmentRequestDto();
+        request.setDoctorId(doctor.getId());
+        request.setPreferredDateTime(LocalDateTime.now().minusDays(1));
+        request.setAppointmentType(AppointmentType.TELECONSULTATION);
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
 }
