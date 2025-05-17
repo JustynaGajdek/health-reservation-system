@@ -242,5 +242,24 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
     }
 
+    @Test
+    void shouldReturnBadRequestWhenRequestMissingDoctorOrDate() throws Exception {
+        // given
+        String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
+
+        AppointmentRequestDto invalidRequest = new AppointmentRequestDto();
+        invalidRequest.setAppointmentType(AppointmentType.STATIONARY);
+
+        // when + then
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+
 
 }

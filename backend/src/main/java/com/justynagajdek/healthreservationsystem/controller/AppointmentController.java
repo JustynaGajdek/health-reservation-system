@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.dto.AppointmentRequestDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.mapper.AppointmentMapper;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,7 @@ public class AppointmentController {
         this.appointmentMapper = appointmentMapper;
     }
     @PostMapping("/request")
-    public ResponseEntity<AppointmentDto> requestAppointment(@RequestBody AppointmentRequestDto dto) {
+    public ResponseEntity<AppointmentDto> requestAppointment(@Valid @RequestBody AppointmentRequestDto dto) {
         AppointmentEntity saved = appointmentService.createPendingAppointment(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(appointmentMapper.toDto(saved));
     }
