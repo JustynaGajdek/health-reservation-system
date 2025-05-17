@@ -10,7 +10,7 @@ public class AppointmentRequestDto {
     @NotNull(message = "Date and time is required")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime preferredDateTime;
-    @NotNull
+    @NotNull(message = "Appointment type is required")
     private AppointmentType appointmentType;
     @NotNull(message = "Doctor ID is required")
     private Long doctorId;

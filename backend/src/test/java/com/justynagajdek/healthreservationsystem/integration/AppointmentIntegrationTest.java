@@ -373,4 +373,43 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         }
     }
 
+    @Test
+    void shouldRejectAppointmentWithoutType() throws Exception {
+        String email = "jan+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createPatientWithUser(email, UUID.randomUUID().toString().substring(0,11), userRepo, patientRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        AppointmentRequestDto request = new AppointmentRequestDto();
+        request.setDoctorId(doctor.getId());
+        request.setPreferredDateTime(LocalDateTime.now().plusDays(1));
+        request.setAppointmentType(null);
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectAppointmentRequestIfNotPatient() throws Exception {
+        String email = "receptionist+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createReceptionistWithUser(email, userRepo);
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        AppointmentRequestDto request = new AppointmentRequestDto();
+        request.setDoctorId(doctor.getId());
+        request.setPreferredDateTime(LocalDateTime.now().plusDays(2));
+        request.setAppointmentType(AppointmentType.TELECONSULTATION);
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("RECEPTIONIST"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andDo(print());
+    }
+
+
+
 }

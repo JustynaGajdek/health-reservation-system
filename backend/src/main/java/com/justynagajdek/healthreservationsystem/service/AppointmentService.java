@@ -44,7 +44,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getPatient() == null) {
-            throw new RuntimeException("Only patients can request appointments.");
+            throw new AccessDeniedException("Only patients can request appointments.");
         }
 
         if (dto.getPreferredDateTime().isBefore(LocalDateTime.now())) {
