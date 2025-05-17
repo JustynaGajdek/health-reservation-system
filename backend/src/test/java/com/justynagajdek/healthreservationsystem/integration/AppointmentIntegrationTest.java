@@ -9,11 +9,16 @@ import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.integration.util.BaseIntegrationTest;
 import com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory;
 import com.justynagajdek.healthreservationsystem.repository.*;
+import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -62,6 +67,9 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     private AppointmentRepository appointmentRepo;
     @Autowired
     private ReceptionistRepository receptionistRepo;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
 
     @Test
@@ -173,12 +181,19 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         appointmentRepo.save(appointment);
 
+        SecurityContext context = Mockito.mock(SecurityContext.class);
+        Authentication auth = Mockito.mock(Authentication.class);
+        Mockito.when(auth.getName()).thenReturn("doctor@example.com");
+        Mockito.when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
+        // when
         mockMvc.perform(get("/appointments/mine")
                         .with(user(email).roles("DOCTOR"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andDo(print());
+                .andExpect(jsonPath("$.length()").value(1));
+
     }
 
     @Test
@@ -274,16 +289,13 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         appointment.setAppointmentType(AppointmentType.STATIONARY);
         appointmentRepo.save(appointment);
 
-        mockMvc.perform(delete("/appointments/" + appointment.getId())
+        mockMvc.perform(patch("/appointments/" + appointment.getId() + "/cancel-request")
                         .with(user(email).roles("PATIENT"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
         assertThat(appointmentRepo.findById(appointment.getId()).get().getStatus())
-                .isEqualTo(AppointmentStatus.CANCELED);
+                .isEqualTo(AppointmentStatus.CANCEL_REQUESTED);
     }
-
-
-
 
 }

@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,6 +45,10 @@ public class AppointmentService {
 
         if (user.getPatient() == null) {
             throw new RuntimeException("Only patients can request appointments.");
+        }
+
+        if (dto.getPreferredDateTime().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot book an appointment in the past.");
         }
 
         DoctorEntity doctor = doctorRepository.findById(dto.getDoctorId())

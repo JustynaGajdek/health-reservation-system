@@ -109,5 +109,5 @@ public class TestEntityFactory {
         String email = "doctor+" + UUID.randomUUID() + "@example.com";
         return createDoctorWithUser(email, userRepo, doctorRepo);
     }
-    
+
 }
