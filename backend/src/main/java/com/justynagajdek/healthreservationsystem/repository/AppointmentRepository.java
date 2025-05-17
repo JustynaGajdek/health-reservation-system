@@ -15,6 +15,8 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     List<AppointmentEntity> findByDoctor_Id(Long doctorId);
 
     boolean existsByAppointmentDateAndDoctorId(LocalDateTime appointmentDate, Long doctorId);
+    boolean existsByAppointmentDateAndPatientId(LocalDateTime date, Long patientId);
+
 
     List<AppointmentEntity> findAllByPatient_User(UserEntity user);
     List<AppointmentEntity> findAllByDoctor_User(UserEntity user);

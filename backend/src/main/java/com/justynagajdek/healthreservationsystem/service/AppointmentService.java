@@ -57,7 +57,9 @@ public class AppointmentService {
         if (appointmentRepository.existsByAppointmentDateAndDoctorId(dto.getPreferredDateTime(), doctor.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment already exists at this time");
         }
-
+        if (appointmentRepository.existsByAppointmentDateAndPatientId(dto.getPreferredDateTime(), user.getPatient().getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You already have an appointment at this time");
+        }
 
         AppointmentEntity appointment = new AppointmentEntity();
         appointment.setPatient(user.getPatient());

@@ -410,6 +410,38 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                 .andDo(print());
     }
 
+    @Test
+    void shouldRejectDoubleBookingForPatientAcrossDoctors() throws Exception {
+        String email = "jan+" + UUID.randomUUID() + "@example.com";
+        String pesel = UUID.randomUUID().toString().substring(0, 11);
 
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
+        DoctorEntity doctor1 = TestEntityFactory.createDoctorWithUser("doc1@example.com", userRepo, doctorRepo);
+        DoctorEntity doctor2 = TestEntityFactory.createDoctorWithUser("doc2@example.com", userRepo, doctorRepo);
+
+        LocalDateTime date = LocalDateTime.of(2025, 5, 20, 10, 0);
+
+        AppointmentRequestDto first = new AppointmentRequestDto();
+        first.setDoctorId(doctor1.getId());
+        first.setPreferredDateTime(date);
+        first.setAppointmentType(AppointmentType.STATIONARY);
+
+        AppointmentRequestDto second = new AppointmentRequestDto();
+        second.setDoctorId(doctor2.getId());
+        second.setPreferredDateTime(date);
+        second.setAppointmentType(AppointmentType.TELECONSULTATION);
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(first)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(second)))
+                .andExpect(status().isConflict());
+    }
 
 }
