@@ -43,32 +43,6 @@ public class TestEntityFactory {
     }
 
 
-    public static DoctorEntity createDoctorWithUser(UserRepository userRepo, DoctorRepository doctorRepo) {
-        UserEntity user = new UserEntity();
-        user.setEmail("anna.nowak@example.com");
-        user.setPasswordHash("test1234");
-        user.setRole(Role.DOCTOR);
-        user.setStatus(AccountStatus.ACTIVE);
-        user.setFirstName("Anna");
-        user.setLastName("Nowak");
-        user.setPhoneNumber("987654321");
-        user = userRepo.save(user);
-
-        DoctorEntity doctor = new DoctorEntity();
-        doctor.setFirstName("Anna");
-        doctor.setLastName("Nowak");
-        doctor.setUser(user);
-        doctor.setWorkingHours(Map.of(
-                "monday", "08:00-16:00",
-                "tuesday", "08:00-16:00"
-        ));
-        doctor.setSpecialization("General Medicine");
-        doctor.setOfficeNumber("101A");
-        doctor.setBio("Experienced general practitioner.");
-
-        return doctorRepo.save(doctor);
-    }
-
     public static PatientEntity createPatientWithUser(String email, String pesel, UserRepository userRepo, PatientRepository patientRepo) {
         UserEntity user = new UserEntity();
         user.setEmail(email);
@@ -131,7 +105,9 @@ public class TestEntityFactory {
         return userRepo.save(user);
     }
 
-
-
-
+    public static DoctorEntity createDoctorWithUser(UserRepository userRepo, DoctorRepository doctorRepo) {
+        String email = "doctor+" + UUID.randomUUID() + "@example.com";
+        return createDoctorWithUser(email, userRepo, doctorRepo);
+    }
+    
 }

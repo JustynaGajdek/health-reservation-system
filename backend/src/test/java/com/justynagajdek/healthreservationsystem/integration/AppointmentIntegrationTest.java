@@ -160,9 +160,9 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "doctor@example.com", roles = "DOCTOR")
     void shouldReturnAppointmentsForDoctor() throws Exception {
-        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser("doctor@example.com", userRepo, doctorRepo);
+        String email = "doctor+" + UUID.randomUUID() + "@example.com";
+        DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(email, userRepo, doctorRepo);
         PatientEntity patient = TestEntityFactory.createPatientWithUser("patient@example.com", "12345678901", userRepo, patientRepo);
 
         AppointmentEntity appointment = new AppointmentEntity();
@@ -174,7 +174,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         appointmentRepo.save(appointment);
 
         mockMvc.perform(get("/appointments/mine")
-                        .with(user("doctor@example.com").roles("DOCTOR"))
+                        .with(user(email).roles("DOCTOR"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
