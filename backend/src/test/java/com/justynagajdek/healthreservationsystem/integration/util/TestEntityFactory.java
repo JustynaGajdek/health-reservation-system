@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @Transactional
@@ -83,6 +84,9 @@ public class TestEntityFactory {
         patient.setPesel("12345678232");
         patient.setAddress("Test Street 1");
         patient.setDateOfBirth(LocalDate.of(1990, 1, 1));
+
+        user.setPatient(patient);
+
         return patientRepo.save(patient);
     }
 
@@ -103,9 +107,11 @@ public class TestEntityFactory {
         return doctorRepo.save(doctor);
     }
 
-    public static UserEntity createUser(String email, Role role, UserRepository userRepo) {
+    public static UserEntity createUser(String baseEmailPrefix, Role role, UserRepository userRepo) {
+        String uniqueEmail = baseEmailPrefix + "+" + UUID.randomUUID() + "@example.com";
+
         UserEntity user = new UserEntity();
-        user.setEmail(email);
+        user.setEmail(uniqueEmail);
         user.setRole(role);
         user.setPasswordHash("test"); // dummy
         user.setFirstName("Test");
@@ -113,6 +119,18 @@ public class TestEntityFactory {
         user.setStatus(AccountStatus.ACTIVE);
         return userRepo.save(user);
     }
+
+    public static UserEntity createReceptionistWithUser(String email, UserRepository userRepo) {
+        UserEntity user = new UserEntity();
+        user.setEmail(email);
+        user.setFirstName("Recep");
+        user.setLastName("Tionist");
+        user.setPasswordHash("test123");
+        user.setRole(Role.RECEPTIONIST);
+        user.setStatus(AccountStatus.ACTIVE);
+        return userRepo.save(user);
+    }
+
 
 
 

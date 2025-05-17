@@ -15,30 +15,32 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory.createPatientWithUser;
-import static com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 
 
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -63,10 +65,10 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
 
     @Test
-    @WithMockUser(username = "jan.kowalski@example.com", roles = "PATIENT")
     void shouldCreateAppointmentWhenSlotIsFree() throws Exception {
         // given: a patient and a doctor exist in the database
-        PatientEntity patient = createPatientWithUser(userRepo, patientRepo);
+        String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
         AppointmentRequestDto request = new AppointmentRequestDto();
@@ -76,6 +78,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
         // when: POST /appointments/request
         mockMvc.perform(post("/appointments/request")
+                        .with(user(email).roles("PATIENT"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -85,12 +88,12 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "jan.kowalski@example.com", roles = "PATIENT")
     void shouldReturnConflictWhenDoubleBooking() throws Exception {
         // given
-        PatientEntity patient = createPatientWithUser(userRepo, patientRepo);
+        String email = "jan.kowalski+" + UUID.randomUUID() + "@example.com";
+
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(email, "12345678901", userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
-        String datetime = "2025-05-20T10:00:00";
 
         AppointmentRequestDto request = new AppointmentRequestDto();
         request.setDoctorId(doctor.getId());
@@ -99,21 +102,20 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
         // when: first booking succeeds
         mockMvc.perform(post("/appointments/request")
-                        .with(user("jan.kowalski@example.com").roles("PATIENT"))
+                        .with(user(email).roles("PATIENT"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
         // then: second booking gets 409 Conflict
         mockMvc.perform(post("/appointments/request")
-                        .with(user("jan.kowalski@example.com").roles("PATIENT"))
+                        .with(user(email).roles("PATIENT"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andDo(print());
     }
     @Test
-    @WithMockUser(username = "jan.kowalski@example.com", roles = "PATIENT")
     void shouldReturnAppointmentsForPatient() throws Exception {
         // given
         PatientEntity patient = createPatientWithUser(userRepo, patientRepo);
@@ -180,14 +182,15 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "reception@example.com", roles = "RECEPTIONIST")
     void shouldReturnForbiddenForUnauthorizedRole() throws Exception {
         // given
-        createUser("reception@example.com", Role.RECEPTIONIST, userRepo);
+        String email = "reception+" + UUID.randomUUID() + "@example.com";
+        TestEntityFactory.createReceptionistWithUser(email, userRepo);
+
 
         // when + then
         mockMvc.perform(get("/appointments/mine")
-                        .with(user("reception@example.com").roles("RECEPTIONIST"))
+                        .with(user(email).roles("RECEPTIONIST"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andDo(print());
@@ -198,7 +201,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     void shouldReturnUnauthorizedIfNotLoggedIn() throws Exception {
         mockMvc.perform(get("/appointments/mine")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andDo(print());
     }
 
@@ -206,7 +209,9 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
     @WithMockUser(username = "reception@example.com", roles = "RECEPTIONIST")
     void shouldCancelAppointmentAsReceptionist() throws Exception {
         // given
-        UserEntity receptionistUser = TestEntityFactory.createUser("reception@example.com", Role.RECEPTIONIST, userRepo);
+        String email = "reception+" + UUID.randomUUID() + "@example.com";
+        UserEntity receptionistUser = TestEntityFactory.createUser(email, Role.RECEPTIONIST, userRepo);
+
         ReceptionistEntity receptionist = new ReceptionistEntity();
         receptionist.setUser(receptionistUser);
         receptionistRepo.save(receptionist);
@@ -236,6 +241,6 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         assertThat(maybeAppointment.get().getStatus()).isEqualTo(AppointmentStatus.CANCELED);
 
     }
-    
+
 
 }
