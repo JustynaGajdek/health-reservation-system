@@ -110,6 +110,32 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
         assertThat(saved.getPatient().getId()).isEqualTo(patient.getId());
     }
 
+    @Test
+    void shouldRejectVaccinationCreationWhenUnauthorizedRole() throws Exception {
+        vaccinationRepository.deleteAll();
+
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        String token = jwtTokenUtil.generateJwtToken(patient.getUser().getEmail());
+
+        String payload = """
+        {
+            "vaccineName": "Hepatitis B",
+            "vaccinationDate": "%s",
+            "mandatory": false
+        }
+        """.formatted(LocalDate.now().minusWeeks(2).toString());
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isForbidden());
+
+        assertThat(vaccinationRepository.findAll()).isEmpty();
+    }
+
+
 
 
 }
