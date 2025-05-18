@@ -1,7 +1,9 @@
 package com.justynagajdek.healthreservationsystem.integration;
 
 import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
+import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.entity.VaccinationEntity;
+import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.integration.util.BaseIntegrationTest;
 import com.justynagajdek.healthreservationsystem.integration.util.TestEntityFactory;
 import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
@@ -25,6 +27,9 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @Testcontainers
 @SpringBootTest
@@ -71,6 +76,40 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].vaccineName").value("MMR"));
     }
+
+    @Test
+    void shouldAddVaccinationAsDoctor() throws Exception {
+        // given
+        vaccinationRepository.deleteAll();
+
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity doctor = TestEntityFactory.createUser("doctor", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
+
+        String payload = """
+        {
+            "vaccineName": "Tetanus",
+            "vaccinationDate": "%s",
+            "mandatory": true
+        }
+        """.formatted(LocalDate.now().minusDays(1).toString());
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated());
+
+        // verify
+        var all = vaccinationRepository.findAll();
+        assertThat(all).hasSize(1);
+        VaccinationEntity saved = all.get(0);
+        assertThat(saved.getVaccineName()).isEqualTo("Tetanus");
+        assertThat(saved.isMandatory()).isTrue();
+        assertThat(saved.getPatient().getId()).isEqualTo(patient.getId());
+    }
+
 
 
 }
