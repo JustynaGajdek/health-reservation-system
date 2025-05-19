@@ -181,6 +181,15 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldRejectVaccinationRetrievalWithoutAuth() throws Exception {
+        // when + then
+        mockMvc.perform(get("/vaccinations/patient")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+
 
 
 
