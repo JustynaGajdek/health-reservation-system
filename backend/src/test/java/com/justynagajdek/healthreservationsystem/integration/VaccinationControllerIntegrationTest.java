@@ -313,5 +313,25 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldRejectAddVaccinationWithoutAuth() throws Exception {
+        // given
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        String payload = """
+    {
+        "vaccineName": "Varicella",
+        "vaccinationDate": "%s",
+        "mandatory": false
+    }
+    """.formatted(LocalDate.now().minusDays(7));
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isUnauthorized());
+    }
+
+
 
 }
