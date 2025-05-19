@@ -11,9 +11,11 @@ import com.justynagajdek.healthreservationsystem.repository.VaccinationRepositor
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -73,11 +75,12 @@ class VaccinationServiceTest {
 
         when(patientRepository.findById(patientId)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> vaccinationService.addVaccination(patientId, dto));
 
-        assertEquals("Patient not found", ex.getMessage());
-        verify(vaccinationRepository, never()).save(any());
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertEquals("Patient not found", ex.getReason());
+
     }
 
     @Test

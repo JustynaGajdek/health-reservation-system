@@ -39,7 +39,11 @@ public class TestEntityFactory {
         patient.setDateOfBirth(LocalDate.of(1990, 1, 1));
         patient.setUser(user);
 
-        return patientRepo.save(patient);
+        PatientEntity saved = patientRepo.save(patient);
+        user.setPatient(saved);
+        userRepo.save(user);
+
+        return saved;
     }
 
 
