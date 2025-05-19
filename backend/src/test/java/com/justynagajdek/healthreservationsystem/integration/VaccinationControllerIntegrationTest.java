@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 
 @Testcontainers
@@ -134,6 +135,53 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
 
         assertThat(vaccinationRepository.findAll()).isEmpty();
     }
+
+    @Test
+    void shouldAllowNurseToAddVaccination() throws Exception {
+        // given
+        vaccinationRepository.deleteAll();
+
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity nurse = TestEntityFactory.createUser("nurse", Role.NURSE, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(nurse.getEmail());
+
+        String payload = """
+        {
+            "vaccineName": "Polio",
+            "vaccinationDate": "%s",
+            "mandatory": true
+        }
+        """.formatted(LocalDate.now().minusDays(3));
+
+        // when
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated());
+
+        // then
+        List<VaccinationEntity> list = vaccinationRepository.findByPatientId(patient.getId());
+        assertThat(list)
+                .hasSize(1)
+                .extracting(VaccinationEntity::getVaccineName, VaccinationEntity::isMandatory)
+                .containsExactly(tuple("Polio", true));
+    }
+
+    @Test
+    void shouldRejectGetMyVaccinationsForDoctorRole() throws Exception {
+        // given
+        UserEntity doctor = TestEntityFactory.createUser("doc", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
+
+        // when + then
+        mockMvc.perform(get("/vaccinations/patient")
+                        .header("Authorization", "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+
 
 
 
