@@ -233,6 +233,26 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void shouldReturnForbiddenWhenPatientTriesToAddVaccination() throws Exception {
+        // given
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        String token = jwtTokenUtil.generateJwtToken(patient.getUser().getEmail());
 
+        String payload = """
+        {
+          "vaccineName": "Flu",
+          "vaccinationDate": "%s",
+          "mandatory": true
+        }
+        """.formatted(LocalDate.now());
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isForbidden());
+    }
 
 }
