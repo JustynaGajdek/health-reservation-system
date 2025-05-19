@@ -2,6 +2,7 @@ package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.dto.VaccinationDto;
 import com.justynagajdek.healthreservationsystem.service.VaccinationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class VaccinationController {
     @PreAuthorize("hasAnyRole('NURSE', 'DOCTOR')")
     @ResponseStatus(HttpStatus.CREATED)
     public void addVaccination(@PathVariable Long id,
-                               @RequestBody VaccinationDto dto) {
+                               @RequestBody @Valid VaccinationDto dto) {
         vaccinationService.addVaccination(id, dto);
     }
 

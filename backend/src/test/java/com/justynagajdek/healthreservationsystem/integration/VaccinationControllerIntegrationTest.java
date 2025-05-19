@@ -212,5 +212,27 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void shouldReturnBadRequestWhenRequiredFieldsAreMissing() throws Exception {
+        // given
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity doctor = TestEntityFactory.createUser("doctor", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
+
+        String incompletePayload = """
+    {
+        "mandatory": true
+    }
+    """;
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(incompletePayload))
+                .andExpect(status().isBadRequest());
+    }
+
+
 
 }
