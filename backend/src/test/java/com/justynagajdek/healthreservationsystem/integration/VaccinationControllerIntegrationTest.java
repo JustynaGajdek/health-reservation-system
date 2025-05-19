@@ -300,5 +300,18 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$[0].vaccineName").value("A"))
                 .andExpect(jsonPath("$[1].vaccineName").value("B"));
     }
-    
+
+    @Test
+    void shouldRejectGetMyVaccinationsWhenUnauthorized() throws Exception {
+
+        UserEntity doctor = TestEntityFactory.createUser("doc", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
+
+        // when + then
+        mockMvc.perform(get("/vaccinations/patient")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+
 }
