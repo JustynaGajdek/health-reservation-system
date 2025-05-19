@@ -332,6 +332,29 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void shouldRejectVaccinationAddByReceptionist() throws Exception {
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity receptionist = TestEntityFactory.createUser("recept", Role.RECEPTIONIST, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(receptionist.getEmail());
+
+        String payload = """
+    {
+        "vaccineName": "Hepatitis A",
+        "vaccinationDate": "%s",
+        "mandatory": false
+    }
+    """.formatted(LocalDate.now().minusDays(2));
+
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isForbidden());
+    }
+
+
+
 
 
 }
