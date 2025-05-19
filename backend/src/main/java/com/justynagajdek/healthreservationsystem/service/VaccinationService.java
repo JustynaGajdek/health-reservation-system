@@ -8,8 +8,10 @@ import com.justynagajdek.healthreservationsystem.mapper.VaccinationMapper;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.VaccinationRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class VaccinationService {
 
     public void addVaccination(Long patientId, VaccinationDto dto) {
         PatientEntity patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Patient not found"));
 
         VaccinationEntity vaccination = vaccinationMapper.toEntity(dto);
         vaccination.setPatient(patient);

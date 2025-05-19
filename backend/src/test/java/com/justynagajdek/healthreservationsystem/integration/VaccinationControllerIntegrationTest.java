@@ -255,4 +255,28 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldReturnNotFoundWhenPatientDoesNotExist() throws Exception {
+        // given
+        long nonExistentPatientId = 999_999L;
+        UserEntity doctor = TestEntityFactory.createUser("doctor404", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
+
+        String payload = """
+        {
+            "vaccineName": "Influenza",
+            "vaccinationDate": "%s",
+            "mandatory": false
+        }
+        """.formatted(LocalDate.now().toString());
+
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + nonExistentPatientId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isNotFound());
+    }
+
+
 }
