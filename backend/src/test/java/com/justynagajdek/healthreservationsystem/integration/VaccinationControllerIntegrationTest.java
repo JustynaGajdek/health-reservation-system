@@ -353,8 +353,32 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldAllowDoctorToRegisterVaccination() throws Exception {
+        // given
+        PatientEntity patient = testEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity doctor = testEntityFactory.createUser("doc@example.com", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
 
+        String payload = """
+    {
+        "vaccineName": "Hepatitis A",
+        "vaccinationDate": "%s",
+        "mandatory": false
+    }
+    """.formatted(LocalDate.now());
 
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated());
+
+        var results = vaccinationRepository.findByPatientId(patient.getId());
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getVaccineName()).isEqualTo("Hepatitis A");
+    }
 
 
 }
