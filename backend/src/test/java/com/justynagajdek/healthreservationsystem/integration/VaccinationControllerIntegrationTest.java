@@ -189,10 +189,28 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void shouldRejectVaccinationWhenInvalidDateFormat() throws Exception {
+        // given
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
+        UserEntity doctor = TestEntityFactory.createUser("doctor", Role.DOCTOR, userRepository);
+        String token = jwtTokenUtil.generateJwtToken(doctor.getEmail());
 
+        String invalidPayload = """
+    {
+        "vaccineName": "MMR",
+        "vaccinationDate": "2025/05/20",
+        "mandatory": false
+    }
+    """;
 
-
-
+        // when + then
+        mockMvc.perform(post("/vaccinations/patient/" + patient.getId())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidPayload))
+                .andExpect(status().isBadRequest());
+    }
 
 
 }
