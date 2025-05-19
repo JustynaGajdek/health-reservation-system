@@ -1,5 +1,6 @@
 package com.justynagajdek.healthreservationsystem.integration;
 
+import com.justynagajdek.healthreservationsystem.dto.VaccinationDto;
 import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.entity.VaccinationEntity;
@@ -10,6 +11,7 @@ import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import com.justynagajdek.healthreservationsystem.repository.VaccinationRepository;
+import com.justynagajdek.healthreservationsystem.service.VaccinationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -55,6 +57,8 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private PatientRepository patientRepository;
+    @Autowired
+    private VaccinationService vaccinationService;
 
 
     @Test
@@ -278,5 +282,23 @@ class VaccinationControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void shouldReturnMyVaccinationsAsPatient() throws Exception {
+        // given
+        vaccinationRepository.deleteAll();
+        PatientEntity patient = TestEntityFactory.createPatientWithUser(userRepository, patientRepository);
 
+        vaccinationService.addVaccination(patient.getId(), new VaccinationDto("A", LocalDate.now().minusDays(10), true));
+        vaccinationService.addVaccination(patient.getId(), new VaccinationDto("B", LocalDate.now().minusDays(5), false));
+        String token = jwtTokenUtil.generateJwtToken(patient.getUser().getEmail());
+
+        // when + then
+        mockMvc.perform(get("/vaccinations/patient")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].vaccineName").value("A"))
+                .andExpect(jsonPath("$[1].vaccineName").value("B"));
+    }
+    
 }
