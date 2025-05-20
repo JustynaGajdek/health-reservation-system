@@ -13,6 +13,9 @@ The Health Reservation System is a full-stack application that allows users to r
 - **Controller Layer** – exposes REST API endpoints for login, registration, user management, and appointments
 - **Service Layer** – contains business logic and security-related processing
 - **Repository Layer** – uses Spring Data JPA to access the database
+- **DTOs** – data transfer objects used for request/response (e.g., `SignUpDto`, `AppointmentCreateDTO`)
+- **Mappers** – convert between entities and DTOs using `MapStruct`
+- **Exception Handling** – global exception handler with @ControllerAdvice, structured error responses (timestamp, status, message)
 - **JWT Authentication** – stateless login with `Authorization: Bearer <token>`
 - **SecurityConfig** – configures access per role, public/private endpoints, and filters
 - **Liquibase** – manages schema and test data
@@ -31,15 +34,18 @@ The Health Reservation System is a full-stack application that allows users to r
 
 ## 👤 User Roles and Access Flow
 
-- **PATIENT** – can register, log in, view/book appointments, request prescriptions
-- **DOCTOR** – sees assigned appointments, confirms/rejects
-- **RECEPTIONIST** – confirms bookings, manages patient accounts
-- **ADMIN** – activates new users, manages full user list
+- **PATIENT** – registers via `/auth/register`, starts with `PENDING` status; after activation can log in, view/book appointments, request prescriptions, and view vaccination history.
+- **RECEPTIONIST** – reviews and activates patient accounts, confirms or cancels appointment requests, schedules vaccinations.
+- **DOCTOR** – views assigned appointments, approves qualifications for vaccinations, and issues prescriptions.
+- **NURSE** – supports vaccination execution and possibly monitoring patient history.
+- **ADMIN** – creates and manages medical staff accounts (`DOCTOR`, `RECEPTIONIST`, `NURSE`), oversees system users and roles.
+
 
 ### Registration flow:
-1. User registers (status: `PENDING`)
-2. Admin confirms user → status changes to `ACTIVE`
-3. User can log in and receive JWT
+1. User registers account → assigned role `PATIENT` (status: `PENDING`)
+2. Receptionist reviews and activates patient account → status becomes `ACTIVE`
+3. Patient can log in and use the system (e.g. book appointments)
+4. Administrator manually creates accounts for medical staff (`DOCTOR`, `RECEPTIONIST`,` NURSE`)
 
 ---
 
@@ -117,20 +123,24 @@ classDiagram
 
 ## 🧪 Testing Strategy
 
-The backend includes unit and integration tests:
+The backend includes unit and integration tests, covering core business logic and API behavior:
 
-- **Service layer** – tested with Mockito (`UserServiceTest`)
+**✅ Unit Tests**
+
+- **Service layer logic** – tested with `@MockBean` and `Mockito` (e.g.,`UserServiceTest`,`PrescriptionServiceTest`)
 - **JWT generation and parsing** – (`JwtTokenUtilTest`)
 - **Mapper correctness** – (`UserMapperTest`)
-- **Authentication and registration flow** – full-stack via `MockMvc`
 
-An in-memory H2 database is used for all integration tests with isolated data.
+**🔄 Integration Tests** 
+- End-to-end tests of registration, authentication, appointments, and vaccination flows using `@SpringBootTest` and `MockMvc`
+- `Testcontainers` used to spin up real **PostgreSQL** instances during integration tests
+- Liquibase migrations automatically applied in test containers
 
 ```bash
 cd backend
 ./mvnw test
 ```
-
+Test results are reported by Maven Surefire and run automatically in CI.
 ---
 
 ## 🚀 Scalability (Future Ideas)
