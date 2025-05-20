@@ -3,22 +3,31 @@ version: "3.8"
 services:
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: health-backend
     ports:
       - "8080:8080"
-
+    env_file:
+      - ./backend/.env
     depends_on:
       - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: health-frontend
+    ports:
+      - "3000:80"     
+    depends_on:
+      - backend
 
   db:
     image: postgres:15
     container_name: health-postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - ./backend/.env
     ports:
       - "5433:5432"
     volumes:
