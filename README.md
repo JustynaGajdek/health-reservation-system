@@ -1,5 +1,7 @@
 # Health Reservation System
 
+> This project was developed as part of the **Tech Leaders mentoring program** and showcases a role-based medical appointment system.
+
 A full-stack medical appointment booking system that allows patients to register, schedule appointments (stationary or teleconsultation), request prescriptions, and track vaccination history. Receptionists and doctors confirm appointments, and administrators manage user approvals.
 
 ## 🚀 Tech Stack
