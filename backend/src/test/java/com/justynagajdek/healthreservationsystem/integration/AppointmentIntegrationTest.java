@@ -26,7 +26,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -81,9 +83,12 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
+        LocalDateTime date = LocalDate.now().plusDays(1).atTime(10, 0);
+        String expectedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
         AppointmentRequestDto request = new AppointmentRequestDto();
         request.setDoctorId(doctor.getId());
-        request.setPreferredDateTime(LocalDateTime.of(2025, 5, 20, 10, 0));
+        request.setPreferredDateTime(date);
         request.setAppointmentType(AppointmentType.STATIONARY);
 
         // when: POST /appointments/request
@@ -93,7 +98,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.appointmentDate").value("2025-05-20T10:00:00"))
+                .andExpect(jsonPath("$.appointmentDate").value(expectedDate))
                 .andDo(print());
     }
 
@@ -106,9 +111,11 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
 
+        LocalDateTime date = LocalDate.now().plusDays(1).atTime(10, 0);
+
         AppointmentRequestDto request = new AppointmentRequestDto();
         request.setDoctorId(doctor.getId());
-        request.setPreferredDateTime(LocalDateTime.parse("2025-05-20T10:00:00"));
+        request.setPreferredDateTime(date);
         request.setAppointmentType(AppointmentType.TELECONSULTATION);
 
         // when: first booking succeeds
@@ -419,7 +426,7 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         DoctorEntity doctor1 = TestEntityFactory.createDoctorWithUser("doc1@example.com", userRepo, doctorRepo);
         DoctorEntity doctor2 = TestEntityFactory.createDoctorWithUser("doc2@example.com", userRepo, doctorRepo);
 
-        LocalDateTime date = LocalDateTime.of(2025, 5, 20, 10, 0);
+        LocalDateTime date = LocalDate.now().plusDays(1).atTime(10, 0);
 
         AppointmentRequestDto first = new AppointmentRequestDto();
         first.setDoctorId(doctor1.getId());
