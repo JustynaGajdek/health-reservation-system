@@ -25,23 +25,25 @@ A full-stack medical appointment booking system that allows patients to register
 * Docker & Docker Compose
 * GitHub Actions (CI)
 * Postman (testing)
-
+---
 ## 🩺 Features
 
 * User registration with account status (PENDING → ACTIVE)
 * Role-based access: PATIENT, DOCTOR, RECEPTIONIST, ADMIN
 * JWT-based login and authorization
 * Appointment booking and confirmation
-* Prescription requests
-* Vaccination tracking (mandatory & optional)
-* Admin panel (planned)
-
+* Prescription requests and access control
+* Vaccination tracking with qualification and execution flow
+* Admin user management (view, approve, delete users)
+* Swagger UI documentation at `/swagger-ui/index.html`
+* Fullstack Docker support (backend + frontend + PostgreSQL via Docker Compose)
+* GitHub Actions CI/CD for backend and frontend
+---
 ## 📁 Project Structure
 ```
 health-reservation-system/
 ├── backend/ # Spring Boot backend
 │   ├── Dockerfile
-│   ├── docker-compose.yml
 │   ├── .env (not committed)
 │   ├── src/
 │   │ ├── main/
@@ -66,6 +68,9 @@ health-reservation-system/
 │   └── mvnw, mvnw.cmd # Maven wrapper
 │
 ├── frontend/ # React frontend
+│ ├── Dockerfile
+│ ├── .dockerignore
+│ ├── nginx.conf
 │ ├── public/
 │ └── src/
 │      ├── pages/
@@ -83,15 +88,21 @@ health-reservation-system/
 │      │    └── api.js, auth.service.js
 │      └── main.jsx, App.jsx
 │
+├── .github/
+│   └── workflows/
+│       ├── backend.yml
+│       └── frontend-ci.yml
+│ 
 ├── docs/ # Technical documentation
 │ ├── ARCHITECTURE.md
 │ ├── api_endpoints.md
 │ ├── database-schema.md
 │ └── db_schema_diagram.png
-│
+│ 
+├── docker-compose.yml          # Multi-service deployment
 └── README.md
 ```
-
+---
 ## 🧪 Run Locally
 
 **Prerequisites**
@@ -109,32 +120,42 @@ cd backend
 ```
 2. Start containers:
 ```bash
-cd backend
+cd ..
 docker compose up --build
 ```
-_Backend runs on `http://localhost:8080`, PostgreSQL on port `5433`._
+_Backend runs on `http://localhost:8080`_
 
+_Frontend (React + Nginx): `http://localhost:3000`_
 
-**Frontend**
-```
-cd frontend
-npm install
-npm run dev
-```
+_PostgreSQL on port `5433`._
 
+---
 ### ⚙️ Local dev without Docker
+
+**Run backend:**
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
+**Run frontend (in a separate terminal):**
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+_Frontend runs on `http://localhost:3000` and proxies API requests to backend._
 
 **Database setup**
+You must have `PostgreSQL` running locally on `localhost:5432 `
+with user and DB configured as in `application.properties.`
+
 Run Liquibase migrations:
 ```
 cd backend
 ./mvnw liquibase:update
 ```
-
+---
 ## ✅ Environment
 Create `.env` file inside `/backend`:
 ```env
@@ -146,31 +167,46 @@ JWT_SECRET=your-test-jwt-secret
 ```
 Use `.env.example` as a base template.
 
-
+---
 ## 🧪 Tests
 
-The project includes both unit and integration tests for key components:
+The project includes both unit and integration tests, covering:
 
-- User registration & login (JWT)
-- Authentication filter logic
-- Token generation and validation
-- Mapper and service layer logic
+**✅ Unit tests:**
 
-To run tests:
+- Controllers: auth, admin, patient, doctor, receptionist, appointment, prescriptions, vaccinations
+- Services: user, staff, patient, doctor, prescription, appointment, vaccination
+- Mappers: user, patient, appointment, prescription, vaccination
+- Security: JWT token utils and authentication filter
+
+**🔄 Integration tests:**
+- Authentication & registration flows
+- Appointment and vaccination scenarios
+- Spring context bootstrapping
+
+All tests run via **Maven Surefire** in CI/CD.
+
+You can run them locally with:
 ```
 cd backend
 ./mvnw test
 ```
-
+---
 ## 🧪 CI/CD
 
-GitHub Actions workflow:
-- runs on pull requests and pushes to main
-- builds backend with Maven
-- runs unit & integration tests
-- supports env variables in CI only
+- `backend.yml`: runs on pull requests and pushes to `main`
+    - builds backend with Maven
+    - runs unit & integration tests
+    - supports env variables in CI only
+- `frontend-ci.yml`: runs on pull requests and pushes to `main`
+    - installs dependencies
+    - builds the React app
+    - runs linting and basic frontend checks
 
-Workflow file: `.github/workflows/backend.yml`
+Workflow file:
+- `.github/workflows/backend.yml`
+- `.github/workflows/frontend-ci.yml`
+---
 
 ## 📖 API Docs (Swagger UI)
 
@@ -193,6 +229,7 @@ The Swagger configuration can be found in:
 - `OpenApiConfig.java` – metadata (title, version, description)
 - `SecurityConfig.java` – public access granted to `/swagger-ui/**` and `/v3/api-docs/**`
 
+---
 
 ## ⚙️ Configuration: `application.yml`
 This project uses `application.yml` instead of `application.properties` for cleaner, structured configuration.
@@ -225,10 +262,8 @@ Secrets and credentials are loaded from `.env` or system environment variables (
 
 
 ## 📌 Status
-✅ MVP in progress — login, registration, appointment booking complete.
-✅ Auth flow implemented (register, login, logout)
-✅ Context-based state and token storage
-✅ Routes protected via PrivateRoute
+✅ MVP completed
+🚧 Planned: email notifications, calendar integration, audit logs
 
 ## 🧑‍💻 Author
 Justyna Gajdek

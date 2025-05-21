@@ -30,8 +30,9 @@ const LoginForm = () => {
         <h2>Log In</h2>
         {error && <p className="error-message">{error}</p>}
         <div className="form-group">
-          <label>Email:</label>
+          <label htmlFor="email">Email:</label>
           <input
+            id="email"
             type="email"
             placeholder="you@email.com"
             value={email}
