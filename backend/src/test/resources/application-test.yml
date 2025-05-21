@@ -1,4 +1,8 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/health-reservation-system
+    username: postgres
+    password: asd
   jpa:
     hibernate:
       ddl-auto: none
