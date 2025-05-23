@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.dto.LoginDto;
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
+import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,12 @@ class AuthControllerUnitTest {
     UserService userService;
     @Autowired
     ObjectMapper objectMapper;
+
+    @MockBean
+    UserMapper userMapper;
+
+
+
 
 
     @Test

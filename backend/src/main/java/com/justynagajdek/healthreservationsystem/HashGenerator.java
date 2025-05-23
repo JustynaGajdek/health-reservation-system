@@ -1,4 +1,4 @@
-package com.justynagajdek.healthreservationsystem.util;
+package com.justynagajdek.healthreservationsystem;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
