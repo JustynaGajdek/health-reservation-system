@@ -1,7 +1,9 @@
 package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.dto.LoginDto;
+import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.jwt.JwtTokenUtil;
+import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
 import com.justynagajdek.healthreservationsystem.payload.JwtResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,12 +24,15 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
-    private final UserService UserService;
+    private final UserService userService;
+    private final UserMapper userMapper;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserService userService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil,
+                          UserService userService, UserMapper userMapper) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
-        this.UserService = userService;
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping("/login")
@@ -50,7 +55,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody SignUpDto signupDto) {
         try {
-            UserEntity newUser = UserService.registerNewUser(signupDto);
+            UserEntity newUser = userService.registerNewUser(signupDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body("Account created. Waiting for admin approval.");
         } catch (IllegalArgumentException e) {
@@ -58,4 +63,11 @@ public class AuthController {
                     .body(e.getMessage());
         }
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getCurrentUser(Authentication authentication) {
+        UserEntity user = userService.findByEmail(authentication.getName());
+        return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
 }

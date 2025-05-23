@@ -12,7 +12,7 @@ export default function useAuth() {
         const { data } = await fetchProfile()
         setUser(data)
       } catch (error) {
-        console.error('Nie udało się pobrać profilu:', error)
+        console.error('Profile loading failed:', error)
         logout() 
       } finally {
         setLoading(false)
@@ -30,7 +30,6 @@ export default function useAuth() {
     const { data } = await loginService(credentials)
     localStorage.setItem('token', data.token)
     setToken(data.token)
-    setUser(data.user) 
   }
 
   const logout = () => {
