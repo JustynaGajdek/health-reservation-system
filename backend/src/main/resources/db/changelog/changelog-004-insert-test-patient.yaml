@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-test-patient
+      author: justyna
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, valueNumeric: 999 }
+              - column: { name: email, value: "test.patient@example.com" }
+              - column: { name: password_hash, value: "$2a$10$yvkjyqApy5Pung87VmVeAev6Wypc..uYgYxlOXZX.TAYJkaxvsDha" }
+              - column: { name: first_name, value: "Test" }
+              - column: { name: last_name, value: "Patient" }
+              - column: { name: phone_number, value: "500123456" }
+              - column: { name: role, value: "PATIENT" }
+              - column: { name: status, value: "ACTIVE" }
+
+        - insert:
+            tableName: patients
+            columns:
+              - column: { name: id, valueNumeric: 999 }
+              - column: { name: user_id, valueNumeric: 999 }
+              - column: { name: pesel, value: "99010112345" }
+              - column: { name: birth_date, valueDate: "1999-01-01" }
+              - column: { name: address, value: "123 Main St" }
