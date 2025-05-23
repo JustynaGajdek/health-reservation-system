@@ -5,4 +5,8 @@ databaseChangeLog:
       file: db/changelog/changelog-002-insert-data.yaml
   - include:
       file: db/changelog/changelog-003-add-nurses-table.yaml
+  - include:
+      file: db/changelog/changelog-004-insert-test-patient.yaml
+
+
 

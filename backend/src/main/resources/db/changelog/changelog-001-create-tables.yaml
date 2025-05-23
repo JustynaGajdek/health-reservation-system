@@ -94,6 +94,7 @@ databaseChangeLog:
                   type: timestamp
                   defaultValueComputed: CURRENT_TIMESTAMP
 
+
         # self-referencing FK dla guardian_id
         - addForeignKeyConstraint:
             baseTableName: patients
@@ -200,6 +201,9 @@ databaseChangeLog:
             ifNotExists: true
             columns:
               - column:
+                  name: appointment_id
+                  type: bigint
+              - column:
                   name: id
                   type: serial
                   constraints:
@@ -231,6 +235,13 @@ databaseChangeLog:
                   name: status
                   type: varchar(50)
                   defaultValue: PENDING
+        - addForeignKeyConstraint:
+            baseTableName: prescriptions
+            baseColumnNames: appointment_id
+            referencedTableName: appointments
+            referencedColumnNames: id
+            constraintName: fk_prescription_appointment
+            onDelete: SET NULL
 
         # vaccinations
         - createTable:
