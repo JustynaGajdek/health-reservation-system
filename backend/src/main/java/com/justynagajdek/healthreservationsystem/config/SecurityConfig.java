@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -50,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers("/", "/auth/**", "/api/info", "/css/**", "/js/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                                 .requestMatchers(
                                         "/swagger-ui.html",
                                         "/swagger-ui/**",

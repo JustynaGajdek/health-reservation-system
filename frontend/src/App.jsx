@@ -6,6 +6,8 @@ import Dashboard from "./pages/DashboardPage/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import PatientDashboard from "./pages/DashboardPage/PatientDashboard";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
           }
         />
       </Routes>
+      <ToastContainer position="top-center" autoClose={3000} />
     </Router>
   );
 }
