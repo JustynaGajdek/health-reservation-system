@@ -8,7 +8,7 @@ databaseChangeLog:
             columns:
               - column: { name: id, valueNumeric: 999 }
               - column: { name: email, value: "test.patient@example.com" }
-              - column: { name: password_hash, value: "$2a$10$yvkjyqApy5Pung87VmVeAev6Wypc..uYgYxlOXZX.TAYJkaxvsDha" } 
+              - column: { name: password_hash, value: "$2a$10$yvkjyqApy5Pung87VmVeAev6Wypc..uYgYxlOXZX.TAYJkaxvsDha" }
               - column: { name: first_name, value: "Test" }
               - column: { name: last_name, value: "Patient" }
               - column: { name: phone_number, value: "500123456" }

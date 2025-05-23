@@ -1,48 +1,48 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthContext } from '../../context/AuthContext';
-import './LoginForm.css';
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
+import "./LoginForm.css";
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { login, user } = useAuthContext()
+  const { login, user } = useAuthContext();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-    useEffect(() => {
+  useEffect(() => {
     if (user?.role) {
       switch (user.role) {
-        case 'PATIENT':
-          navigate('/patient');
+        case "PATIENT":
+          navigate("/dashboard/patient");
           break;
-        case 'RECEPTIONIST':
-          navigate('/reception');
+        case "RECEPTIONIST":
+          navigate("/reception");
           break;
-        case 'DOCTOR':
-          navigate('/doctor');
+        case "DOCTOR":
+          navigate("/doctor");
           break;
-        case 'ADMIN':
-          navigate('/admin');
+        case "ADMIN":
+          navigate("/admin");
           break;
         default:
-          navigate('/');
+          navigate("/");
       }
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      await login({ email, password }) 
+      await login({ email, password });
     } catch (err) {
-      console.error(err)
-      setError('Invalid email or password. Please try again.')
+      console.error(err);
+      setError("Invalid email or password. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="login-container">
@@ -70,7 +70,9 @@ const LoginForm = () => {
             required
           />
         </div>
-        <button type="submit" className="login-button">Log In</button>
+        <button type="submit" className="login-button">
+          Log In
+        </button>
 
         <div className="form-links">
           <Link to="/register">Don't have an account? Register</Link>

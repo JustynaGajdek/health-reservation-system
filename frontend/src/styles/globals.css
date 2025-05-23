@@ -7,7 +7,7 @@
 
 /* BASE TYPOGRAPHY */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.5;
   background-color: #f5f5f5;
   color: #333;
@@ -35,4 +35,123 @@ button,
 textarea,
 select {
   font: inherit;
+}
+
+/* DASHBOARD LAYOUT */
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f0f4ff;
+}
+
+.dashboard-sidebar {
+  width: 220px;
+  background-color: #f4f6fc;
+  color: #333;
+  padding: 1rem;
+}
+
+.dashboard-sidebar .nav-link {
+  color: #333;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-sidebar .nav-link {
+  color: #333;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.dashboard-sidebar .nav-link:hover {
+  background-color: #e0e7ff;
+}
+
+.dashboard-sidebar .nav-link.active {
+  background-color: #e0e7ff;
+}
+
+.dashboard-main {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #f0f4ff;
+}
+
+.dashboard-main .btn-primary {
+  margin-top: 1.5rem;
+}
+
+.dashboard-header {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  max-width: 480px;
+  margin: 0 auto 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+
+/* CARD STYLE */
+
+.dashboard-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+/* BUTTON STYLES */
+
+.btn-light-gray {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.btn-light-gray:hover {
+  background-color: #e5e5e5;
+}
+
+.btn-blue {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.btn-blue:hover {
+  background-color: #2563eb;
+}
+
+.btn-red {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.btn-red:hover {
+  background-color: #dc2626;
 }
