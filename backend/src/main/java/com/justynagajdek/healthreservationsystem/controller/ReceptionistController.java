@@ -6,6 +6,7 @@ import com.justynagajdek.healthreservationsystem.dto.PrescriptionDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
+import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +20,14 @@ public class ReceptionistController {
 
     private final AppointmentService appointmentService;
     private final PrescriptionService prescriptionService;
+    private final UserService userService;
 
 
-    public ReceptionistController(AppointmentService appointmentService, PrescriptionService prescriptionService) {
+    public ReceptionistController(AppointmentService appointmentService, PrescriptionService prescriptionService,
+                                  UserService userService) {
         this.appointmentService = appointmentService;
         this.prescriptionService = prescriptionService;
+        this.userService = userService;
     }
 
     @GetMapping("/appointments/unassigned")
@@ -50,6 +54,14 @@ public class ReceptionistController {
         appointmentService.cancelAppointment(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/receptionist/users/reject/{id}")
+    @PreAuthorize("hasRole('RECEPTIONIST')")
+    public ResponseEntity<String> rejectUser(@PathVariable Long id) {
+        userService.rejectUser(id);
+        return ResponseEntity.ok("User rejected");
+    }
+
 
 
 

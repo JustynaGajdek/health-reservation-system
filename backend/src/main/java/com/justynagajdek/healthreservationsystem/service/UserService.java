@@ -1,17 +1,13 @@
 package com.justynagajdek.healthreservationsystem.service;
 
-import com.justynagajdek.healthreservationsystem.dto.PatientDto;
+import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.dto.UserDto;
-import com.justynagajdek.healthreservationsystem.entity.PatientEntity;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
-import com.justynagajdek.healthreservationsystem.exception.ResourceNotFoundException;
 import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,9 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
-
-
 
 import java.util.List;
 
@@ -107,5 +100,18 @@ public class UserService implements UserDetailsService {
         u.setPhoneNumber(dto.getPhone());
         return userRepository.save(u);
     }
+
+    public void rejectUser(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getStatus() != AccountStatus.PENDING) {
+            throw new IllegalStateException("Only users with PENDING status can be rejected");
+        }
+
+        user.setStatus(AccountStatus.REJECTED);
+        userRepository.save(user);
+    }
+
 
 }
