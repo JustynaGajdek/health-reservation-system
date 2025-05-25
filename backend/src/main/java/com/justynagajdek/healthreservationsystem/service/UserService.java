@@ -1,11 +1,13 @@
 package com.justynagajdek.healthreservationsystem.service;
 
+import com.justynagajdek.healthreservationsystem.dto.PendingUserDto;
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
 import com.justynagajdek.healthreservationsystem.enums.AccountStatus;
 import com.justynagajdek.healthreservationsystem.enums.Role;
 import com.justynagajdek.healthreservationsystem.exception.UserNotFoundException;
+import com.justynagajdek.healthreservationsystem.mapper.UserMapper;
 import com.justynagajdek.healthreservationsystem.repository.PatientRepository;
 import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import org.springframework.context.annotation.Primary;
@@ -26,12 +28,15 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PatientRepository patientRepository;
+    private final UserMapper userMapper;
+
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       PatientRepository patientRepository) {
+                       PatientRepository patientRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.patientRepository = patientRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -111,6 +116,13 @@ public class UserService implements UserDetailsService {
 
         user.setStatus(AccountStatus.REJECTED);
         userRepository.save(user);
+    }
+
+    public List<PendingUserDto> getPendingUsers() {
+        return userRepository.findByStatus(AccountStatus.PENDING)
+                .stream()
+                .map(userMapper::toPendingUserDto)
+                .toList();
     }
 
 

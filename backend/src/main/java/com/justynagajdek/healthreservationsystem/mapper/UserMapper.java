@@ -1,5 +1,6 @@
 package com.justynagajdek.healthreservationsystem.mapper;
 
+import com.justynagajdek.healthreservationsystem.dto.PendingUserDto;
 import com.justynagajdek.healthreservationsystem.dto.SignUpDto;
 import com.justynagajdek.healthreservationsystem.dto.UserDto;
 import com.justynagajdek.healthreservationsystem.entity.UserEntity;
@@ -54,5 +55,19 @@ public class UserMapper {
                 .status(entity.getStatus())
                 .build();
     }
+
+    public PendingUserDto toPendingUserDto(UserEntity user) {
+        return new PendingUserDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getPesel(),
+                user.getAddress(),
+                user.getRole().name()
+        );
+    }
+
 
 }

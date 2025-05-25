@@ -62,6 +62,11 @@ public class ReceptionistController {
         return ResponseEntity.ok("User rejected");
     }
 
+    @GetMapping("/users/pending")
+    public ResponseEntity<List<?>> getPendingUsers() {
+        var pendingUsers = userService.getPendingUsers();
+        return ResponseEntity.ok(pendingUsers);
+    }
 
 
 
