@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-test-appointments
+      author: justyna
+      changes:
+        - insert:
+            tableName: appointments
+            columns:
+              - column: { name: id, valueNumeric: 2001 }
+              - column: { name: patient_id, valueNumeric: 999 }
+              - column: { name: doctor_id, valueNumeric: 995 }
+              - column: { name: appointment_date, valueDate: "2025-05-26T10:00:00" }
+              - column: { name: appointment_type, value: "IN_PERSON" }
+              - column: { name: status, value: "CONFIRMED" }
+
+        - insert:
+            tableName: appointments
+            columns:
+              - column: { name: id, valueNumeric: 2002 }
+              - column: { name: patient_id, valueNumeric: 999 }
+              - column: { name: doctor_id, valueNumeric: 995 }
+              - column: { name: appointment_date, valueDate: "2025-05-27T14:30:00" }
+              - column: { name: appointment_type, value: "TELECONSULTATION" }
+              - column: { name: status, value: "PENDING" }
+
+        - insert:
+            tableName: appointments
+            columns:
+              - column: { name: id, valueNumeric: 2003 }
+              - column: { name: patient_id, valueNumeric: 999 }
+              - column: { name: doctor_id, valueNumeric: 995 }
+              - column: { name: appointment_date, valueDate: "2025-05-25T08:30:00" }
+              - column: { name: appointment_type, value: "IN_PERSON" }
+              - column: { name: status, value: "CANCELLED" }
