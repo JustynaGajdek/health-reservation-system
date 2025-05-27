@@ -37,7 +37,10 @@ const LoginForm = () => {
     setError("");
 
     try {
-      await login({ email, password });
+      const response = await login({ email, password });
+      localStorage.setItem("token", response.data.token);
+      toast.success("Logged in!");
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       setError("Invalid email or password. Please try again.");
