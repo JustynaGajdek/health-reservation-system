@@ -5,6 +5,7 @@ import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
 import com.justynagajdek.healthreservationsystem.dto.PatientDto;
 import com.justynagajdek.healthreservationsystem.dto.PrescriptionDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
+import com.justynagajdek.healthreservationsystem.mapper.PatientMapper;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
 import com.justynagajdek.healthreservationsystem.service.PatientService;
 import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
@@ -27,14 +28,16 @@ public class ReceptionistController {
     private final PrescriptionService prescriptionService;
     private final UserService userService;
     private final PatientService patientService;
+    private final PatientMapper patientMapper;
 
 
     public ReceptionistController(AppointmentService appointmentService, PrescriptionService prescriptionService,
-                                  UserService userService, PatientService patientService) {
+                                  UserService userService, PatientService patientService, PatientMapper patientMapper) {
         this.appointmentService = appointmentService;
         this.prescriptionService = prescriptionService;
         this.userService = userService;
         this.patientService = patientService;
+        this.patientMapper = patientMapper;
     }
 
     @GetMapping("/appointments/unassigned")
@@ -85,8 +88,18 @@ public class ReceptionistController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @GetMapping("/patients")
+    public ResponseEntity<List<PatientDto>> getAllPatients() {
+        var entities = patientService.getAllPatients();
+        var dtos = entities.stream()
+                .map(patientMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
 
-
-
-
+    @GetMapping("/patients/{id}")
+    public ResponseEntity<PatientDto> getPatient(@PathVariable Long id) {
+        var entity = patientService.getById(id);
+        return ResponseEntity.ok(patientMapper.toDto(entity));
+    }
 }

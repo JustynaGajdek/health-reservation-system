@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class PatientService {
     private final PatientRepository patientRepository;
@@ -77,7 +79,6 @@ public class PatientService {
 
     @Transactional
     public PatientDto createPatient(PatientDto dto) {
-        // 1. Utwórz i zapisz użytkownika od razu jako ACTIVE
         UserEntity user = new UserEntity();
         user.setEmail(dto.getEmail());
 
@@ -107,4 +108,18 @@ public class PatientService {
         out.setAddress(patient.getAddress());
         return out;
     }
+
+    @Transactional(readOnly = true)
+    public List<PatientEntity> getAllPatients() {
+        return patientRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public PatientEntity getById(Long id) {
+        return patientRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found with id: " + id)
+                );
+    }
+
 }
