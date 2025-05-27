@@ -124,6 +124,4 @@ public class UserService implements UserDetailsService {
                 .map(userMapper::toPendingUserDto)
                 .toList();
     }
-
-
 }

@@ -9,6 +9,8 @@ import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +66,10 @@ public class ReceptionistController {
 
     @GetMapping("/users/pending")
     public ResponseEntity<List<?>> getPendingUsers() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("🔍 Authenticated user: " + auth.getName());
+        System.out.println("🔍 Authorities:     " + auth.getAuthorities());
+
         var pendingUsers = userService.getPendingUsers();
         return ResponseEntity.ok(pendingUsers);
     }
