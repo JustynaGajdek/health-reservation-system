@@ -6,6 +6,7 @@ import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.jwt.JwtAuthenticationFilter;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
+import com.justynagajdek.healthreservationsystem.service.PatientService;
 import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
 import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,9 @@ class ReceptionistControllerTest {
 
     @MockBean
     private UserService userService;
+    @MockBean
+    private PatientService patientService;
+
 
     @Test
     void shouldReturnUnassignedAppointmentsList() throws Exception {
