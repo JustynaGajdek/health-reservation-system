@@ -53,7 +53,7 @@ public class PatientController {
     }
 
     @PreAuthorize("hasAnyRole('RECEPTIONIST','DOCTOR')")
-    @GetMapping("/by-pesel")
+    @GetMapping("/by-pesel/{pesel}")
     public ResponseEntity<PatientDto> getByPesel(@PathVariable String pesel) {
         PatientEntity entity = patientService.getByPesel(pesel);
         if (entity == null) {
