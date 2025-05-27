@@ -1,0 +1,35 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Build & Push Docker image
+        working-directory: frontend
+        run: |
+          docker build -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }} .
+          gcloud auth configure-docker europe-west1-docker.pkg.dev
+          docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy health-frontend \
+            --image europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }} \
+            --region ${{ secrets.GCP_REGION }} \
+            --platform managed \
+            --allow-unauthenticated
