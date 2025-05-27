@@ -74,4 +74,37 @@ public class PatientService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Patient with PESEL " + pesel + " not found"));
     }
+
+    @Transactional
+    public PatientDto createPatient(PatientDto dto) {
+        // 1. Utwórz i zapisz użytkownika od razu jako ACTIVE
+        UserEntity user = new UserEntity();
+        user.setEmail(dto.getEmail());
+
+        user.setPasswordHash(passwordEncoder.encode("defaultPass123"));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setRole(Role.PATIENT);
+        user.setStatus(AccountStatus.ACTIVE);
+        user = userRepository.save(user);
+
+        PatientEntity patient = new PatientEntity();
+        patient.setUser(user);
+        patient.setPesel(dto.getPesel());
+        patient.setDateOfBirth(dto.getDateOfBirth());
+        patient.setAddress(dto.getAddress());
+        patient = patientRepository.save(patient);
+
+        PatientDto out = new PatientDto();
+        out.setId(user.getId());
+        out.setEmail(user.getEmail());
+        out.setFirstName(user.getFirstName());
+        out.setLastName(user.getLastName());
+        out.setPhoneNumber(user.getPhoneNumber());
+        out.setPesel(patient.getPesel());
+        out.setDateOfBirth(patient.getDateOfBirth());
+        out.setAddress(patient.getAddress());
+        return out;
+    }
 }

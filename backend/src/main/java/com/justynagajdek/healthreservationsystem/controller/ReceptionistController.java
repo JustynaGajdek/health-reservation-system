@@ -2,11 +2,14 @@ package com.justynagajdek.healthreservationsystem.controller;
 
 import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
+import com.justynagajdek.healthreservationsystem.dto.PatientDto;
 import com.justynagajdek.healthreservationsystem.dto.PrescriptionDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
+import com.justynagajdek.healthreservationsystem.service.PatientService;
 import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
 import com.justynagajdek.healthreservationsystem.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,13 +26,15 @@ public class ReceptionistController {
     private final AppointmentService appointmentService;
     private final PrescriptionService prescriptionService;
     private final UserService userService;
+    private final PatientService patientService;
 
 
     public ReceptionistController(AppointmentService appointmentService, PrescriptionService prescriptionService,
-                                  UserService userService) {
+                                  UserService userService, PatientService patientService) {
         this.appointmentService = appointmentService;
         this.prescriptionService = prescriptionService;
         this.userService = userService;
+        this.patientService = patientService;
     }
 
     @GetMapping("/appointments/unassigned")
@@ -73,6 +78,14 @@ public class ReceptionistController {
         var pendingUsers = userService.getPendingUsers();
         return ResponseEntity.ok(pendingUsers);
     }
+
+    @PostMapping("/patients")
+    public ResponseEntity<PatientDto> createPatient(@RequestBody PatientDto dto) {
+        PatientDto created = patientService.createPatient(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+
 
 
 
