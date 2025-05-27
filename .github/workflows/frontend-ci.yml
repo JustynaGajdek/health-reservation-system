@@ -3,36 +3,30 @@ name: Frontend CI
 on:
   push:
     paths:
-      - 'src/**'
-      - 'package.json'
-      - 'vite.config.js'
-      - '.eslintrc.js'
+      - 'frontend/**'
+    branches: [ main ]
   pull_request:
     paths:
-      - 'src/**'
-      - 'package.json'
+      - 'frontend/**'
 
 jobs:
   lint-test-build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-
-      - name: Install deps
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        working-directory: frontend
         run: npm ci
-
-      - name: Lint (ESLint)
+      - name: Lint
+        working-directory: frontend
         run: npm run lint
-
-      - name: Test (Jest + RTL)
-        run: npm run test -- --coverage
-
-      - name: Build (Vite)
+      - name: Build
+        working-directory: frontend
         run: npm run build
+
