@@ -23,4 +23,6 @@ app:
   jwtSecret: ${JWT_SECRET}
   jwtExpirationMs: 3600000
 
-
+logging:
+  level:
+    org.springframework.security: DEBUG

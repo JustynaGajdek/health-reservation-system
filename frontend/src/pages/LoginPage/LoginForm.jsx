@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import "./LoginForm.css";
+import { toast } from "react-toastify";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const LoginForm = () => {
           navigate("/dashboard/patient");
           break;
         case "RECEPTIONIST":
-          navigate("/reception");
+          navigate("/dashboard/receptionist");
           break;
         case "DOCTOR":
           navigate("/doctor");
@@ -38,6 +39,7 @@ const LoginForm = () => {
 
     try {
       await login({ email, password });
+      toast.success("Logged in!");
     } catch (err) {
       console.error(err);
       setError("Invalid email or password. Please try again.");

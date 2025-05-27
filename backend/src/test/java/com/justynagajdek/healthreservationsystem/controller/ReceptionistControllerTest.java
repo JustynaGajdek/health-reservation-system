@@ -5,8 +5,11 @@ import com.justynagajdek.healthreservationsystem.dto.AssignAppointmentDto;
 import com.justynagajdek.healthreservationsystem.dto.AppointmentCreationDto;
 import com.justynagajdek.healthreservationsystem.entity.AppointmentEntity;
 import com.justynagajdek.healthreservationsystem.jwt.JwtAuthenticationFilter;
+import com.justynagajdek.healthreservationsystem.mapper.PatientMapper;
 import com.justynagajdek.healthreservationsystem.service.AppointmentService;
+import com.justynagajdek.healthreservationsystem.service.PatientService;
 import com.justynagajdek.healthreservationsystem.service.PrescriptionService;
+import com.justynagajdek.healthreservationsystem.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -56,6 +59,14 @@ class ReceptionistControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private UserService userService;
+    @MockBean
+    private PatientService patientService;
+    @MockBean
+    private  PatientMapper patientMapper;
+
 
     @Test
     void shouldReturnUnassignedAppointmentsList() throws Exception {

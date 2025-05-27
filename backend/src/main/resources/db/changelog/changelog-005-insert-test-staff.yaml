@@ -1,0 +1,87 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-test-admin
+      author: justyna
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, valueNumeric: 997 }
+              - column: { name: email, value: "admin_test@example.com" }
+              - column: { name: password_hash, value: "$2a$10$j/5yIArvS9hy.XVSUFRS1uJGqWN13E7psgz8lE5kP2ilTfsAux8H6" }  # testadminr
+              - column: { name: first_name, value: "Test" }
+              - column: { name: last_name, value: "Admin" }
+              - column: { name: phone_number, value: "500100002" }
+              - column: { name: role, value: "ADMIN" }
+              - column: { name: status, value: "ACTIVE" }
+
+  - changeSet:
+      id: insert-test-receptionist
+      author: justyna
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, valueNumeric: 998 }
+              - column: { name: email, value: "receptionist@example.com" }
+              - column: { name: password_hash, value: "$2a$10$d4RA36SMy9H7DrTkpgkd1uokMzGHGSEV9v9QNrSFxOJRaXoVlXpdC" }  # testrecep
+              - column: { name: first_name, value: "Test" }
+              - column: { name: last_name, value: "Receptionist" }
+              - column: { name: phone_number, value: "500100001" }
+              - column: { name: role, value: "RECEPTIONIST" }
+              - column: { name: status, value: "ACTIVE" }
+
+        - insert:
+            tableName: receptionists
+            columns:
+              - column: { name: id, valueNumeric: 998 }
+              - column: { name: user_id, valueNumeric: 998 }
+
+  - changeSet:
+      id: insert-test-nurse
+      author: justyna
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, valueNumeric: 996 }
+              - column: { name: email, value: "nurse@example.com" }
+              - column: { name: password_hash, value: "$2a$10$wnBNdRGAYX5cGSshvGVmLeyjyJWNEpFKsBTzAmzo4tQur1UwWOAVe" }  # testnurse
+              - column: { name: first_name, value: "Test" }
+              - column: { name: last_name, value: "Nurse" }
+              - column: { name: phone_number, value: "500100003" }
+              - column: { name: role, value: "NURSE" }
+              - column: { name: status, value: "ACTIVE" }
+
+        - insert:
+            tableName: nurses
+            columns:
+              - column: { name: id, valueNumeric: 996 }
+              - column: { name: user_id, valueNumeric: 996 }
+
+  - changeSet:
+      id: insert-test-doctor
+      author: justyna
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, valueNumeric: 995 }
+              - column: { name: email, value: "doctor@example.com" }
+              - column: { name: password_hash, value: "$2a$10$U4Iy4IQlOwDMf61az8xtSOkilCLXwKl1ZMr/0fqcFypW6k7Vbz6by" }  # testdoctor
+              - column: { name: first_name, value: "Test" }
+              - column: { name: last_name, value: "Doctor" }
+              - column: { name: phone_number, value: "500100004" }
+              - column: { name: role, value: "DOCTOR" }
+              - column: { name: status, value: "ACTIVE" }
+
+        - insert:
+            tableName: doctors
+            columns:
+              - column: { name: id, valueNumeric: 995 }
+              - column: { name: user_id, valueNumeric: 995 }
+              - column: { name: specialization, value: "Internal Medicine" }
+              - column: { name: office_number, value: "101" }
+              - column: { name: working_hours, value: "{\"MONDAY\":\"08:00-14:00\",\"TUESDAY\":\"08:00-14:00\"}" }
+              - column: { name: bio, value: "Experienced in internal medicine and preventive care." }
+

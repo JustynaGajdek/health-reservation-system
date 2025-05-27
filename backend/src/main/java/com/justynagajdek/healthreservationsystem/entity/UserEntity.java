@@ -28,6 +28,12 @@ public class UserEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "pesel")
+    private String pesel;
+
+    @Column(name = "address")
+    private String address;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -153,6 +159,14 @@ public class UserEntity {
     }
 
     public void setPassword(String pass) {
+    }
+
+    public String getPesel() {
+        return pesel;
+    }
+
+    public String getAddress() {
+        return address;
     }
 }
 

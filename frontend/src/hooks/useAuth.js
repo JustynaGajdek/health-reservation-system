@@ -30,6 +30,9 @@ export default function useAuth() {
     const { data } = await loginService(credentials);
     localStorage.setItem("token", data.token);
     setToken(data.token);
+
+    const profile = await fetchProfile();
+    setUser(profile.data);
   };
 
   const logout = () => {

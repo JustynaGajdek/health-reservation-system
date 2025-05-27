@@ -7,6 +7,11 @@ databaseChangeLog:
       file: db/changelog/changelog-003-add-nurses-table.yaml
   - include:
       file: db/changelog/changelog-004-insert-test-patient.yaml
+  - include:
+      file: db/changelog/changelog-005-insert-test-staff.yaml
+  - include:
+      file: db/changelog/changelog-006-insert-test-appointments.yaml
+
 
 
 

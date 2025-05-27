@@ -1,23 +1,16 @@
-import { useAuthContext } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { Routes, Route } from "react-router-dom";
+import PatientDashboard from "./PatientDashboard";
+import ReceptionistDashboard from "../ReceptionistPage/ReceptionistPage";
+
 
 const Dashboard = () => {
-  const { logout } = useAuthContext()
-  const navigate = useNavigate()
+  return (
+    <Routes>
+      <Route path="patient" element={<PatientDashboard />} />
+      <Route path="receptionist" element={<ReceptionistDashboard />} />
 
-    const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+    </Routes>
+  );
+};
 
-    return (
-      <div>
-        <h1>Welcome!</h1>
-        <p>You are now logged in to the clinic system.</p>
-        <button onClick={handleLogout}>Log out</button>
-      </div>
-    );
-  };
-  
-  export default Dashboard;
-  
+export default Dashboard;
