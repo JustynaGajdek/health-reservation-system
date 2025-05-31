@@ -1,6 +1,7 @@
 name: Frontend CI
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'frontend/**'
@@ -12,6 +13,8 @@ on:
 jobs:
   lint-test-build:
     runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: http://localhost:8080
 
     steps:
       - uses: actions/checkout@v3
