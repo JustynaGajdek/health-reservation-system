@@ -29,7 +29,9 @@ jobs:
       - name: Build & Push Docker image
         working-directory: backend
         run: |
-          docker build -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-backend:${{ github.sha }} .
+          docker build \
+            -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-backend:${{ github.sha }} \
+            .
           gcloud auth configure-docker europe-west1-docker.pkg.dev
           docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-backend:${{ github.sha }}
 
