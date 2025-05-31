@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormProvider, useFormContext } from 'react-hook-form';
+import { FormProvider } from 'react-hook-form';
 import { useRegistrationForm } from '../../hooks/useRegistrationForm';
 import PersonalInfoFields from './PersonalInfoFields';
 import ContactInfoFields from './ContactInfoFields';
