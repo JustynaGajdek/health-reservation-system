@@ -45,6 +45,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
 
 
-      - name: Build Docker image
+      - name: Build and test with Maven
         working-directory: backend
-        run: mvn clean verify -Ptest --batch-mode
+        run: mvn clean verify --batch-mode
