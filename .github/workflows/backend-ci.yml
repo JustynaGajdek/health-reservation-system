@@ -29,6 +29,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/health-reservation-system
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: asd
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: test-test-test-1234567890
+
     steps:
       - uses: actions/checkout@v4
 
