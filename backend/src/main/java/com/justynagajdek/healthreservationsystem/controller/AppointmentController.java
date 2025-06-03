@@ -43,7 +43,10 @@ public class AppointmentController {
         appointmentService.requestAppointmentCancellation(id);
         return ResponseEntity.noContent().build();
     }
-
-
-
+    @PreAuthorize("hasAnyRole('DOCTOR', 'RECEPTIONIST')")
+    @GetMapping("/today")
+    public List<AppointmentDto> getTodayAppointments() {
+        List<AppointmentEntity> appointments = appointmentService.getTodayAppointmentsForCurrentUser();
+        return appointmentMapper.toDtoList(appointments);
+    }
 }

@@ -153,5 +153,35 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
+    public List<AppointmentEntity> getTodayAppointmentsForCurrentUser() {
+        UserEntity user = getAuthenticatedUser();
+
+        LocalDateTime start = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end = start.plusDays(1);
+
+        return switch (user.getRole()) {
+            case DOCTOR -> {
+                DoctorEntity doctor = user.getDoctor();
+                if (doctor == null) throw new IllegalStateException("Doctor not linked");
+                yield appointmentRepository.findByDoctorIdAndAppointmentDateBetween(doctor.getId(), start, end);
+            }
+            case RECEPTIONIST -> appointmentRepository.findByAppointmentDateBetween(start, end);
+            default -> throw new AccessDeniedException("Unauthorized to view today's appointments.");
+        };
+    }
+
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User is not authenticated.");
+        }
+
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    }
+
+
 
 }
