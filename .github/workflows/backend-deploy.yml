@@ -42,4 +42,6 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            --add-cloudsql-instances=health-reservation-system-demo:europe-west1:health-db \
+            --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --timeout=300s
