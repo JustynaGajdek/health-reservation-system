@@ -1,7 +1,7 @@
 import React from "react";
 import ReceptionistNavbar from "./ReceptionistNavbar";
 import ReceptionistSidebar from "./ReceptionistSidebar";
-import LogoutButton from "./LogoutButton";
+import LogoutButton from "../common/LogoutButton";
 import { Outlet } from "react-router-dom";
 
 const ReceptionistLayout = () => (

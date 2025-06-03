@@ -1,6 +1,6 @@
-import React from 'react';
-import { Navbar } from 'react-bootstrap';
-import { useAuthContext } from '../../context/AuthContext';
+import React from "react";
+import { Navbar } from "react-bootstrap";
+import { useAuthContext } from "../../../context/AuthContext";
 
 const ReceptionistNavbar = () => {
   const { user } = useAuthContext();
@@ -12,7 +12,7 @@ const ReceptionistNavbar = () => {
           Reception Panel
         </Navbar.Brand>
         <div className="ms-auto text-muted small">
-          Logged in as: {user?.firstName || 'Receptionist'}
+          Logged in as: {user?.firstName || "Receptionist"}
         </div>
       </div>
     </Navbar>
