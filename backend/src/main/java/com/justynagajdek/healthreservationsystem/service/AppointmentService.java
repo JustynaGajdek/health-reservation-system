@@ -38,10 +38,7 @@ public class AppointmentService {
     }
 
     public AppointmentEntity createPendingAppointment(AppointmentRequestDto dto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user = getAuthenticatedUser();
 
         if (user.getPatient() == null) {
             throw new AccessDeniedException("Only patients can request appointments.");
@@ -109,14 +106,7 @@ public class AppointmentService {
     }
 
     public List<AppointmentEntity> getAppointmentsForCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("User is not authenticated.");
-        }
-
-        String email = authentication.getName();
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        UserEntity user = getAuthenticatedUser();
 
         return switch (user.getRole()) {
             case PATIENT -> appointmentRepository.findAllByPatient_User(user);
@@ -133,15 +123,12 @@ public class AppointmentService {
     }
 
     public void requestAppointmentCancellation(Long appointmentId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        UserEntity currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        UserEntity user = getAuthenticatedUser();
 
         AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
 
-        if (currentUser.getPatient() == null || !appointment.getPatient().getId().equals(currentUser.getPatient().getId())) {
+        if (user.getPatient() == null || !appointment.getPatient().getId().equals(user.getPatient().getId())) {
             throw new AccessDeniedException("You are not authorized to request cancellation for this appointment.");
         }
 
@@ -181,7 +168,5 @@ public class AppointmentService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
-
-
 
 }

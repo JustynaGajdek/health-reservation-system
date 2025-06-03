@@ -16,9 +16,11 @@ import com.justynagajdek.healthreservationsystem.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,8 +55,16 @@ public class AppointmentServiceTest {
 
     @Test
     void shouldCreateAppointmentWithPendingStatus() {
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("patient@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
         AppointmentRequestDto dto = new AppointmentRequestDto();
-        dto.setPreferredDateTime(LocalDateTime.of(2025, 6, 1, 14, 0));
+        dto.setPreferredDateTime(LocalDateTime.now().plusDays(1).withHour(14).withMinute(0));
         dto.setAppointmentType(AppointmentType.STATIONARY);
         dto.setDoctorId(1L);
 
@@ -81,13 +91,21 @@ public class AppointmentServiceTest {
 
     @Test
     void shouldThrowIfUserIsNotPatient() {
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("patient@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
         UserEntity mockUser = new UserEntity();
-        mockUser.setPatient(null); // brak pacjenta
+        mockUser.setPatient(null);
 
         when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(mockUser));
 
         AppointmentRequestDto dto = new AppointmentRequestDto();
-        dto.setPreferredDateTime(LocalDateTime.now());
+        dto.setPreferredDateTime(LocalDateTime.now().plusDays(1));
         dto.setAppointmentType(AppointmentType.STATIONARY);
 
         assertThatThrownBy(() -> appointmentService.createPendingAppointment(dto))
@@ -193,6 +211,114 @@ public class AppointmentServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Role ADMIN not allowed");
     }
+    @Test
+    void shouldReturnTodayAppointmentsForDoctor() {
+        // given
+        UserEntity doctorUser = new UserEntity();
+        doctorUser.setEmail("doctor@example.com");
+        doctorUser.setRole(Role.DOCTOR);
 
+        DoctorEntity doctor = new DoctorEntity();
+        doctor.setId(42L);
+        doctorUser.setDoctor(doctor);
+
+        when(userRepository.findByEmail("doctor@example.com")).thenReturn(Optional.of(doctorUser));
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("doctor@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        AppointmentEntity appointment = new AppointmentEntity();
+        appointment.setAppointmentDate(now);
+        appointment.setDoctor(doctor);
+
+        when(appointmentRepository.findByDoctorIdAndAppointmentDateBetween(doctor.getId(), startOfDay, endOfDay))
+                .thenReturn(List.of(appointment));
+
+        // when
+        List<AppointmentEntity> result = appointmentService.getTodayAppointmentsForCurrentUser();
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDoctor().getId()).isEqualTo(42L);
+        assertThat(result.get(0).getAppointmentDate()).isAfterOrEqualTo(startOfDay);
+        assertThat(result.get(0).getAppointmentDate()).isBefore(endOfDay);
+    }
+
+    @Test
+    void shouldReturnTodayAppointmentsForReceptionist() {
+        // given
+        UserEntity receptionist = new UserEntity();
+        receptionist.setEmail("receptionist@example.com");
+        receptionist.setRole(Role.RECEPTIONIST);
+
+        when(userRepository.findByEmail("receptionist@example.com")).thenReturn(Optional.of(receptionist));
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("receptionist@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        AppointmentEntity a1 = new AppointmentEntity();
+        a1.setAppointmentDate(now);
+
+        when(appointmentRepository.findByAppointmentDateBetween(startOfDay, endOfDay))
+                .thenReturn(List.of(a1));
+
+        // when
+        List<AppointmentEntity> result = appointmentService.getTodayAppointmentsForCurrentUser();
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getAppointmentDate()).isAfterOrEqualTo(startOfDay);
+    }
+
+    @Test
+    void shouldThrowAccessDeniedForUnsupportedRole() {
+        UserEntity patient = new UserEntity();
+        patient.setEmail("patient@example.com");
+        patient.setRole(Role.PATIENT); // <-- brak dostępu
+
+        when(userRepository.findByEmail("patient@example.com")).thenReturn(Optional.of(patient));
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("patient@example.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
+        assertThatThrownBy(() -> appointmentService.getTodayAppointmentsForCurrentUser())
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("Unauthorized to view today's appointments.");
+    }
+
+    @Test
+    void shouldThrowAccessDeniedWhenUserIsNotAuthenticated() {
+        Authentication auth = mock(Authentication.class);
+        when(auth.isAuthenticated()).thenReturn(false);
+
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(context);
+
+        assertThatThrownBy(() -> appointmentService.getTodayAppointmentsForCurrentUser())
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("User is not authenticated.");
+    }
 
 }
