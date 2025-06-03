@@ -13,24 +13,32 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # 1) Authenticate to GCP using the GitHub‐provided service account key.
       - name: Authenticate to GCP
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      # 2) Install & configure gcloud (so that `gcloud auth configure-docker` works).
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-
+      # 3) Build & push the Docker image into Artifact Registry.
       - name: Build & Push Docker image
         working-directory: frontend
         run: |
-          docker build -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }} .
+          docker build \
+            -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }} \
+            .
+          # Make sure gcloud is authenticated for docker pushes:
           gcloud auth configure-docker europe-west1-docker.pkg.dev
+
+          # Now push:
           docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/health-repo/health-frontend:${{ github.sha }}
 
+      # 4) Deploy that image to Cloud Run:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy health-frontend \
