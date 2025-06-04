@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -82,6 +83,11 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
         String pesel = UUID.randomUUID().toString().substring(0, 11);
         PatientEntity patient = TestEntityFactory.createPatientWithUser(email, pesel, userRepo, patientRepo);
         DoctorEntity doctor = TestEntityFactory.createDoctorWithUser(userRepo, doctorRepo);
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(email, null);
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
 
         LocalDateTime date = LocalDate.now().plusDays(1).atTime(10, 0);
         String expectedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
