@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../services/api";
@@ -36,7 +35,9 @@ export function useRegistrationForm() {
   const methods = useForm({ resolver: yupResolver(schema) });
 
   const onSubmit = async (data) => {
-    const { confirmPassword, ...payload } = data;
+    const payload = { ...data };
+    delete payload.confirmPassword;
+
     try {
       await api.post("/auth/register", payload);
 

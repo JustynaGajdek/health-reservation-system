@@ -1,6 +1,6 @@
 import { useAuthContext } from "../../context/AuthContext";
-import PatientNavbar from "../../components/layout/PatientNavbar";
-import PatientSidebar from "../../components/layout/PatientSidebar";
+import PatientNavbar from "../../components/layouts/patient/PatientNavbar";
+import PatientSidebar from "../../components/layouts/patient/PatientSidebar";
 import AppointmentCard from "../../components/appointments/AppointmentCard";
 import { useNavigate } from 'react-router-dom';
 

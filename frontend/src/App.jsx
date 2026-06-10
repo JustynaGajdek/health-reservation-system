@@ -9,8 +9,8 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import Dashboard from "./pages/DashboardPage/Dashboard";
 import PatientDashboard from "./pages/DashboardPage/PatientDashboard";
 
-import PrivateRoute from "./components/PrivateRoute";
-import ReceptionistLayout from "./components/layout/ReceptionistLayout";
+import PrivateRoute from "./components/layouts/common/PrivateRoute";
+import ReceptionistLayout from "./components/layouts/receptionist/ReceptionistLayout";
 
 import ReceptionistPage from "./pages/ReceptionistPage/ReceptionistPage";
 import ApproveUsers from "./pages/ReceptionistPage/ApproveUsers";

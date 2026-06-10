@@ -45,7 +45,7 @@ const DoctorSidebar = () => {
 
       {/* Navigation Links */}
       <nav className="mt-4 flex-1">
-        {menuItems.map(({ to, icon: Icon, label }) => (
+        {menuItems.map(({ to, icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -55,7 +55,7 @@ const DoctorSidebar = () => {
             }
             aria-label={label}
           >
-            <Icon className="w-5 h-5" />
+            {React.createElement(icon, { className: 'w-5 h-5' })}
             {isOpen && <span className="ml-3">{label}</span>}
           </NavLink>
         ))}
