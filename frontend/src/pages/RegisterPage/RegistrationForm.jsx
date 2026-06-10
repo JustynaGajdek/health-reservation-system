@@ -24,7 +24,6 @@ export default function RegistrationForm() {
         >
           <h2>Create Account</h2>
 
-          {/* global error */}
           {errors.root && (
             <div id="form-error" role="alert" className="error">
               {errors.root.message}
